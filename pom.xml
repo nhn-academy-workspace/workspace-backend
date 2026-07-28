@@ -43,12 +43,12 @@
         <!-- 세션 인증: spring-boot-starter-security가 기본 제공(폼 로그인 대신 커스텀 로그인 API +
              HttpSession 사용 예정). 별도 토큰 라이브러리 불필요. -->
 
-        <!-- Telegram Bot -->
-        <dependency>
-            <groupId>org.telegram</groupId>
-            <artifactId>telegrambots-spring-boot-starter</artifactId>
-            <version>6.9.7.1</version>
-        </dependency>
+<!--        &lt;!&ndash; Telegram Bot &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.telegram</groupId>-->
+<!--            <artifactId>telegrambots-spring-boot-starter</artifactId>-->
+<!--            <version>6.9.7.1</version>-->
+<!--        </dependency>-->
 
         <!-- DB -->
         <dependency>
