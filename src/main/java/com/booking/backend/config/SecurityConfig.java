@@ -33,6 +33,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/",
+                                "/h2-console/**",
                                 "/api/v1/auth/login").permitAll()
                         .anyRequest().authenticated()
                 )
