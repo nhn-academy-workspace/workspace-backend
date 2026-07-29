@@ -1,6 +1,6 @@
-package com.booking.backend.entity;
+package com.booking.backend.domain.notification;
 
-public enum NotType {
+public enum NotiType {
     START_REMINDER, // 시작 알림
     END_REMINDER,   // 종료 알림
     CANCELLED,      // 취소 알림

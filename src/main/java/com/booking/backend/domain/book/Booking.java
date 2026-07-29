@@ -1,5 +1,8 @@
-package com.booking.backend.entity;
+package com.booking.backend.domain.book;
 
+import com.booking.backend.domain.room.Room;
+import com.booking.backend.domain.user.Member;
+import com.booking.backend.domain.user.Team;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
