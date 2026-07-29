@@ -1,5 +1,6 @@
-package com.booking.backend.entity;
+package com.booking.backend.domain.notification;
 
+import com.booking.backend.domain.book.Booking;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,7 +22,7 @@ public class Notification {
 
     @Enumerated(value = EnumType.STRING)
     @Column(name = "type", nullable = false)
-    private NotType notiType;
+    private NotiType notiType;
 
     @Enumerated(value = EnumType.STRING)
     @Column(name = "target_type", nullable = false)

@@ -1,24 +1,18 @@
-package com.booking.backend.entity;
+package com.booking.backend.domain.room;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "teams")
+@Table(name = "rooms")
 @NoArgsConstructor
 @Getter
-public class Team {
+public class Room {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
     private String name;
-
-    @Column(name = "ta_id")
-    private Long taId;
-    // --> 담당 TA id인데 굳이 FK로 묶지는 않음
 }
-
-

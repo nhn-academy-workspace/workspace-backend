@@ -1,4 +1,4 @@
-package com.booking.backend.entity;
+package com.booking.backend.domain.notification;
 
 public enum TargetType {
     MEMBER,
