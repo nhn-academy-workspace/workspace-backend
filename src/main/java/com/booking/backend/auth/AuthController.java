@@ -3,6 +3,7 @@ package com.booking.backend.auth;
 import com.booking.backend.domain.user.Member;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -51,6 +52,16 @@ public class AuthController {
         String teamName = member.getTeam() == null ? null : member.getTeam().getName();
 
         return ResponseEntity.ok(new LoginResponse(member.getName(), member.getRole(), teamName)); // 임시로 해놓은거임
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        SecurityContextHolder.clearContext();
+        return ResponseEntity.ok().build();
     }
 
 }
