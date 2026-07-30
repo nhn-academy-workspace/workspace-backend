@@ -1,4 +1,4 @@
-package com.booking.backend.domain.book;
+package com.booking.backend.domain.book.entity;
 
 import com.booking.backend.domain.user.Member;
 import jakarta.persistence.*;
@@ -21,4 +21,9 @@ public class BookingMember {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
+
+    public BookingMember(Booking booking, Member member) {
+        this.booking = booking;
+        this.member = member;
+    }
 }

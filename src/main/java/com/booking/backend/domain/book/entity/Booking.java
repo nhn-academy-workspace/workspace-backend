@@ -1,9 +1,11 @@
-package com.booking.backend.domain.book;
+package com.booking.backend.domain.book.entity;
 
 import com.booking.backend.domain.room.Room;
 import com.booking.backend.domain.user.Member;
 import com.booking.backend.domain.user.Team;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -11,12 +13,15 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Entity
 @Table(name = "bookings")
 @NoArgsConstructor
 @Getter
 @EntityListeners(AuditingEntityListener.class)
+@AllArgsConstructor
+@Builder
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,4 +69,9 @@ public class Booking {
 
     @Column(name = "adjusted_by_id")
     private Long adjustedById;
+
+    // 예약 시간 반환
+    public Long getBookingDuration() {
+        return ChronoUnit.MINUTES.between(startTime, endTime);
+    }
 }

@@ -1,4 +1,4 @@
-package com.booking.backend.domain.book;
+package com.booking.backend.domain.book.entity;
 
 public enum BookStatus {
 
