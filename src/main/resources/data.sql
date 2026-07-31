@@ -70,3 +70,13 @@ INSERT INTO room_locks (id, room_id, member_id, start_time, end_time, reason, cr
    DATEADD('HOUR', 15, CAST(CURRENT_DATE AS TIMESTAMP)),
    DATEADD('HOUR', 16, CAST(CURRENT_DATE AS TIMESTAMP)),
    '사무실 회의', CURRENT_TIMESTAMP);
+
+-- 위에서 id를 직접 지정해서 넣었기 때문에, IDENTITY 컬럼의 다음 값 카운터가
+-- 여전히 1부터 시작한 상태로 남아있음 -> 이후 API로 새로 생성하는 행이
+-- 시드 데이터의 id와 충돌해서 PK violation이 남 (예: 새 예약 생성 시 500 에러).
+-- 시드 데이터의 최대 id + 1로 카운터를 맞춰준다.
+ALTER TABLE teams ALTER COLUMN id RESTART WITH 3;
+ALTER TABLE members ALTER COLUMN id RESTART WITH 10;
+ALTER TABLE rooms ALTER COLUMN id RESTART WITH 3;
+ALTER TABLE bookings ALTER COLUMN id RESTART WITH 6;
+ALTER TABLE room_locks ALTER COLUMN id RESTART WITH 2;

@@ -1,6 +1,6 @@
 package com.booking.backend.domain.notification;
 
-import com.booking.backend.domain.book.Booking;
+import com.booking.backend.domain.book.entity.Booking;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

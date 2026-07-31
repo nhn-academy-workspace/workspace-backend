@@ -1,6 +1,6 @@
 package com.booking.backend.domain.room.dto;
 
-import com.booking.backend.domain.book.Booking;
+import com.booking.backend.domain.book.entity.Booking;
 import com.booking.backend.domain.room.RoomLock;
 
 import java.time.LocalDateTime;

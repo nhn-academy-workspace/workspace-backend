@@ -22,4 +22,13 @@ public interface RoomLockRepository extends JpaRepository<RoomLock, Long> {
     @Query("SELECT COUNT(r) > 0 FROM RoomLock r " +
             "WHERE r.room.id = :roomId AND r.startTime <= :now AND r.endTime > :now")
     boolean existsActiveLockAt(@Param("roomId") Long roomId, @Param("now") LocalDateTime now);
+
+
+    // 겹치는 Lock이 있는지? 있으면 True
+    @Query("SELECT COUNT(r) > 0 FROM RoomLock r " +
+            "WHERE r.room.id = :roomId " +
+            "AND (r.startTime < :endTime AND r.endTime > :startTime)")
+    boolean existsConflictBookingAt(@Param("roomId") Long roomId,
+                                    @Param("startTime") LocalDateTime startTime,
+                                    @Param("endTime") LocalDateTime endTime);
 }

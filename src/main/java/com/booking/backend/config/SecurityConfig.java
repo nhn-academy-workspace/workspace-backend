@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
@@ -17,6 +18,7 @@ import org.springframework.security.web.context.SecurityContextRepository;
 
 @Configuration
 @RequiredArgsConstructor
+@EnableMethodSecurity // ---> 이게 있어야 @PreAuthoize 어노테이션을 사용할 수 있음
 public class SecurityConfig {
 
     private final CustomUserDetailsService customUserDetailsService;

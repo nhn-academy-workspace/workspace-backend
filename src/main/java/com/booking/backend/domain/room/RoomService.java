@@ -1,7 +1,7 @@
 package com.booking.backend.domain.room;
 
-import com.booking.backend.domain.book.Booking;
-import com.booking.backend.domain.book.BookingRepository;
+import com.booking.backend.domain.book.entity.Booking;
+import com.booking.backend.domain.book.repository.BookingRepository;
 import com.booking.backend.domain.room.dto.BookingTimetableResponse;
 import com.booking.backend.domain.room.dto.RoomResponse;
 import com.booking.backend.domain.room.repository.RoomLockRepository;
@@ -9,6 +9,7 @@ import com.booking.backend.domain.room.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,6 +27,7 @@ public class RoomService {
     private final RoomLockRepository roomLockRepository;
 
     // 모든 회의실의 상태를 반환
+    @Transactional(readOnly = true)
     public List<RoomResponse> checkRoomStatus() {
 
         LocalDateTime now = LocalDateTime.now();
@@ -47,6 +49,7 @@ public class RoomService {
     }
 
     // 특정 날짜의 특정 회의실의 예약 정보를 모두 불러옴
+    @Transactional(readOnly = true)
     public List<BookingTimetableResponse> getBookings(Long roomId, LocalDate date) {
 
         LocalDateTime startOfDay = date.atStartOfDay();
