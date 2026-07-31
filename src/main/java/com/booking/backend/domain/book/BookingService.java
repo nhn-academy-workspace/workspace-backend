@@ -1,16 +1,12 @@
 package com.booking.backend.domain.book;
 
-import com.booking.backend.domain.book.dto.BookingRequest;
-import com.booking.backend.domain.book.dto.BookingResponse;
-import com.booking.backend.domain.book.dto.ExtendRequest;
-import com.booking.backend.domain.book.dto.ExtendResponse;
+import com.booking.backend.domain.book.dto.*;
 import com.booking.backend.domain.book.entity.BookStatus;
 import com.booking.backend.domain.book.entity.Booking;
 import com.booking.backend.domain.book.entity.BookingMember;
 import com.booking.backend.domain.book.repository.BookingMemberRepository;
 import com.booking.backend.domain.book.repository.BookingRepository;
 import com.booking.backend.domain.room.Room;
-import com.booking.backend.domain.room.RoomLock;
 import com.booking.backend.domain.room.repository.RoomLockRepository;
 import com.booking.backend.domain.room.repository.RoomRepository;
 import com.booking.backend.domain.user.Member;
@@ -230,15 +226,43 @@ public class BookingService {
             throw new BookingConflictException("해당 시간에는 예약할 수 없습니다.");
         }
 
-
-
         // ---- 실제 저장 로직 ----
         booking.setEndTime(extendEndTime);
 
         return new ExtendResponse(bookingId, booking.getRoom().getId(), booking.getStartTime(), booking.getEndTime(), booking.getBookStatus());
-
     }
 
+    @Transactional
+    public EarlyReturnResponse earlyReturn(Long memberId, Long bookingId) {
+        Member member = memberRepository.findById(memberId).orElseThrow(
+                () -> new MemberNotFoundException("해당 멤버를 찾을 수 없습니다. : " + memberId)
+        );
+
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(
+                () -> new BookingNotFoundException("해당 예약을 찾을 수 없습니다. " + bookingId)
+        );
+
+        // 해당 멤버가 맞는지 확인
+        if(!Objects.equals(booking.getTeam().getId(), member.getTeam().getId())) {
+            throw new InvalidBookingMemberException("본인의 소속팀만 조기 반납할 수 있습니다.");
+        }
+
+        // BOOKED 상태인지 확인
+        if(booking.getBookStatus() != BookStatus.BOOKED) {
+            throw new InvalidBookingRequestException("해당 예약은 조기 반납할 수 없습니다.");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        if(booking.getStartTime().isAfter(now) || booking.getEndTime().isBefore(now)) {
+            throw new InvalidBookingTimeException("조기 반납은 예약 시간 이내에 해야합니다.");
+        }
+
+
+        booking.setEndTime(now);
+        booking.setBookStatus(BookStatus.EARLY_RETURNED);
+
+        return new EarlyReturnResponse(booking.getBookStatus());
+    }
 
 
 }

@@ -44,6 +44,7 @@ public class Booking {
     @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
+    @Setter
     @Enumerated(value = EnumType.STRING)
     @Column(name = "booking_status", nullable = false)
     private BookStatus bookStatus;

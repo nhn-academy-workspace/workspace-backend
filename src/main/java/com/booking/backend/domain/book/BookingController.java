@@ -1,10 +1,7 @@
 package com.booking.backend.domain.book;
 
 import com.booking.backend.auth.CustomUserDetails;
-import com.booking.backend.domain.book.dto.BookingRequest;
-import com.booking.backend.domain.book.dto.BookingResponse;
-import com.booking.backend.domain.book.dto.ExtendRequest;
-import com.booking.backend.domain.book.dto.ExtendResponse;
+import com.booking.backend.domain.book.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +28,7 @@ public class BookingController {
         return ResponseEntity.status(201).body(res);
     }
 
+    // 연장
     @PatchMapping("/{bookingId}/extend")
     public ResponseEntity<ExtendResponse> extendBooking(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                         @PathVariable Long bookingId,
@@ -41,6 +39,12 @@ public class BookingController {
         return ResponseEntity.ok(res);
     }
 
+    // 조기 반납
+    @PatchMapping("/{bookingId}/early-return")
+    public ResponseEntity<EarlyReturnResponse> earlyReturnBooking(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                  @PathVariable Long bookingId) {
+        EarlyReturnResponse res = bookingService.earlyReturn(userDetails.getMember().getId(), bookingId);
 
-
+        return ResponseEntity.ok(res);
+    }
 }
