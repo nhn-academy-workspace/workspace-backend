@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(400).body(new BookingFailResponse(message));
     }
 
-    @ExceptionHandler({MemberNotFoundException.class, RoomNotFoundException.class})
+    @ExceptionHandler({MemberNotFoundException.class, RoomNotFoundException.class, BookingNotFoundException.class})
     public ResponseEntity<ErrorResponse> notFoundExceptionHandler(Exception e) {
 
         log.debug("⚠️ 404 Not Found: {}", e.getMessage());
@@ -51,6 +51,18 @@ public class GlobalExceptionHandler {
         log.debug("⚠️ 403 Forbidden: {}", e.getMessage());
         ErrorResponse res = new ErrorResponse(403, "접근 권한이 없습니다.", LocalDateTime.now());
         return ResponseEntity.status(403).body(res);
+    }
+
+    // 연장 실패시 예외 처리
+    @ExceptionHandler({
+            ExtendNotAllowedException.class
+    })
+    public ResponseEntity<BookingFailResponse> extendFailExceptionHandler(Exception e) {
+
+        log.debug("⚠️ 연장 실패 | 실패 사유 : {}", e.getMessage());
+
+        String message = e.getMessage();
+        return ResponseEntity.status(400).body(new BookingFailResponse(message));
     }
 }
 

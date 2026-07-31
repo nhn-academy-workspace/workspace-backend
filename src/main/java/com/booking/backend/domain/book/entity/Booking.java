@@ -4,10 +4,7 @@ import com.booking.backend.domain.room.Room;
 import com.booking.backend.domain.user.Member;
 import com.booking.backend.domain.user.Team;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -43,6 +40,7 @@ public class Booking {
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
+    @Setter
     @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
