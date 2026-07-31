@@ -22,7 +22,8 @@ public class GlobalExceptionHandler {
             InvalidBookingTimeException.class,
             MinParticipantsNotMetException.class,
             BookingConflictException.class,
-            InvalidBookingMemberException.class
+            InvalidBookingMemberException.class,
+            InvalidBookingRequestException.class
     })
     public ResponseEntity<BookingFailResponse> badRequestExceptionHandler(Exception e) {
 
