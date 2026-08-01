@@ -32,7 +32,7 @@ public class TeamService {
                 .map(member -> new TeamMemberResponse.MemberInfo(member.getId(), member.getName()))
                 .toList();
 
-        return new TeamMemberResponse(memberId, memberInfos);
+        return new TeamMemberResponse(memberId, memberInfos, teamId);
     }
 
     @Transactional(readOnly = true)
