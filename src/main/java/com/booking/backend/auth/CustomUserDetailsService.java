@@ -1,6 +1,6 @@
 package com.booking.backend.auth;
 
-import com.booking.backend.domain.user.Member;
+import com.booking.backend.domain.user.entity.Member;
 import com.booking.backend.domain.user.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

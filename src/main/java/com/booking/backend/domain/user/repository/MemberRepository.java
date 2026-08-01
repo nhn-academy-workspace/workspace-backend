@@ -1,6 +1,6 @@
 package com.booking.backend.domain.user.repository;
 
-import com.booking.backend.domain.user.Member;
+import com.booking.backend.domain.user.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -18,5 +18,9 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("SELECT m FROM Member m " +
             "WHERE m.team.id = :teamId")
     List<Member> findByTeamId(Long teamId);
+
+    @Query("SELECT m FROM Member m " +
+            "WHERE m.role = 'STUDENT' ")
+    List<Member> findAllStudent();
 }
 

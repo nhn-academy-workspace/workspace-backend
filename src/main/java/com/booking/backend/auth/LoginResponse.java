@@ -1,6 +1,6 @@
 package com.booking.backend.auth;
 
-import com.booking.backend.domain.user.Role;
+import com.booking.backend.domain.user.entity.Role;
 
 public record LoginResponse(
         String name,

@@ -1,6 +1,6 @@
 package com.booking.backend.domain.room;
 
-import com.booking.backend.domain.user.Member;
+import com.booking.backend.domain.user.entity.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

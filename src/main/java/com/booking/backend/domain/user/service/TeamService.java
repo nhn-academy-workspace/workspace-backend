@@ -1,4 +1,4 @@
-package com.booking.backend.domain.user;
+package com.booking.backend.domain.user.service;
 
 import com.booking.backend.domain.book.entity.Booking;
 import com.booking.backend.domain.book.repository.BookingRepository;

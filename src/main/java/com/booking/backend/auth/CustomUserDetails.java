@@ -1,6 +1,6 @@
 package com.booking.backend.auth;
 
-import com.booking.backend.domain.user.Member;
+import com.booking.backend.domain.user.entity.Member;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

@@ -9,7 +9,7 @@ import com.booking.backend.domain.book.repository.BookingRepository;
 import com.booking.backend.domain.room.Room;
 import com.booking.backend.domain.room.repository.RoomLockRepository;
 import com.booking.backend.domain.room.repository.RoomRepository;
-import com.booking.backend.domain.user.Member;
+import com.booking.backend.domain.user.entity.Member;
 import com.booking.backend.domain.user.repository.MemberRepository;
 import com.booking.backend.exception.exception.*;
 import lombok.RequiredArgsConstructor;

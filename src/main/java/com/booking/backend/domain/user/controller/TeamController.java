@@ -1,9 +1,11 @@
-package com.booking.backend.domain.user;
+package com.booking.backend.domain.user.controller;
 
 import com.booking.backend.auth.CustomUserDetails;
 import com.booking.backend.domain.user.dto.TeamBookingResponse;
 import com.booking.backend.domain.user.dto.TeamMemberResponse;
 import com.booking.backend.domain.user.dto.TeamUsageResponse;
+import com.booking.backend.domain.user.entity.Member;
+import com.booking.backend.domain.user.service.TeamService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
