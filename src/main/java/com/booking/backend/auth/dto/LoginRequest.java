@@ -1,4 +1,4 @@
-package com.booking.backend.auth;
+package com.booking.backend.auth.dto;
 
 
 public record LoginRequest(

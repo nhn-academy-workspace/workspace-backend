@@ -25,7 +25,7 @@ public class GlobalExceptionHandler {
             InvalidBookingMemberException.class,
             InvalidBookingRequestException.class
     })
-    public ResponseEntity<BookingFailResponse> badRequestExceptionHandler(Exception e) {
+    public ResponseEntity<BookingFailResponse> bookingBadRequestHandler(Exception e) {
 
         log.debug("⚠️ 예약 실패 | 실패 사유 : {}", e.getMessage());
 
@@ -64,6 +64,23 @@ public class GlobalExceptionHandler {
 
         String message = e.getMessage();
         return ResponseEntity.status(400).body(new BookingFailResponse(message));
+    }
+
+    @ExceptionHandler({
+            InvalidCurrentPasswordException.class,
+            InvalidNewPasswordException.class
+    })
+    public ResponseEntity<ErrorResponse> badRequestExceptionHandler(Exception e) {
+
+        log.debug("⚠️ 400 Bad Request : {}", e.getMessage());
+
+        ErrorResponse res = new ErrorResponse(
+                400,
+                e.getMessage(),
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(400).body(res);
     }
 }
 

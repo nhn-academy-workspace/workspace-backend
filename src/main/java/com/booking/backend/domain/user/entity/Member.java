@@ -1,10 +1,8 @@
 package com.booking.backend.domain.user.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @Table(name = "members")
@@ -27,12 +25,18 @@ public class Member {
     @Column(nullable = false)
     private String name;
 
+    @Setter
     @Column(nullable = false)
     private String password;
 
     @Enumerated(value = EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+
+    @Setter
+    @ColumnDefault("false")
+    @Column(name = "must_change_password", nullable = false)
+    private boolean mustChangePassword;
 
     @Column(name = "telegram_chat_id")
     private String telegramChatId; // 텔레그램 연동 전까지 null
