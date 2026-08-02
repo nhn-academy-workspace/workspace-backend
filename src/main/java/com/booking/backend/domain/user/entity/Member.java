@@ -33,4 +33,23 @@ public class Member {
     @Enumerated(value = EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+
+    @Column(name = "telegram_chat_id")
+    private String telegramChatId; // 텔레그램 연동 전까지 null
+
+    @Builder.Default
+    @Column(name = "notification_enabled", nullable = false)
+    private boolean notificationEnabled = true;
+
+    public void linkTelegram(String chatId) {
+        this.telegramChatId = chatId;
+    }
+
+    public void updateNotificationPreference(boolean enabled) {
+        this.notificationEnabled = enabled;
+    }
+
+    public boolean hasTelegramLinked() {
+        return telegramChatId != null;
+    }
 }
