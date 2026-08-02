@@ -5,6 +5,7 @@ import com.booking.backend.domain.book.repository.BookingRepository;
 import com.booking.backend.domain.user.dto.TeamBookingResponse;
 import com.booking.backend.domain.user.dto.TeamMemberResponse;
 import com.booking.backend.domain.user.dto.TeamUsageResponse;
+import com.booking.backend.domain.user.entity.Member;
 import com.booking.backend.domain.user.repository.MemberRepository;
 import com.booking.backend.exception.exception.InvalidBookingMemberException;
 import com.booking.backend.exception.exception.MemberNotFoundException;
