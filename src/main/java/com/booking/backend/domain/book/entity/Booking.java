@@ -1,8 +1,8 @@
 package com.booking.backend.domain.book.entity;
 
 import com.booking.backend.domain.room.Room;
-import com.booking.backend.domain.user.Member;
-import com.booking.backend.domain.user.Team;
+import com.booking.backend.domain.user.entity.Member;
+import com.booking.backend.domain.user.entity.Team;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;

@@ -1,9 +1,11 @@
-package com.booking.backend.domain.user;
+package com.booking.backend.domain.user.service;
 
 import com.booking.backend.domain.book.entity.Booking;
 import com.booking.backend.domain.book.repository.BookingRepository;
 import com.booking.backend.domain.user.dto.TeamBookingResponse;
 import com.booking.backend.domain.user.dto.TeamMemberResponse;
+import com.booking.backend.domain.user.dto.TeamUsageResponse;
+import com.booking.backend.domain.user.entity.Member;
 import com.booking.backend.domain.user.repository.MemberRepository;
 import com.booking.backend.exception.exception.InvalidBookingMemberException;
 import com.booking.backend.exception.exception.MemberNotFoundException;
@@ -12,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
@@ -32,7 +35,7 @@ public class TeamService {
                 .map(member -> new TeamMemberResponse.MemberInfo(member.getId(), member.getName()))
                 .toList();
 
-        return new TeamMemberResponse(memberId, memberInfos);
+        return new TeamMemberResponse(memberId, memberInfos, teamId);
     }
 
     @Transactional(readOnly = true)
@@ -53,4 +56,32 @@ public class TeamService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public TeamUsageResponse getTeamUsage(Long memberId, Long teamId, LocalDate date) {
+
+        Member member = memberRepository.findById(memberId).orElseThrow(
+                () -> new MemberNotFoundException("해당 멤버를 찾을 수 없습니다. : " + memberId)
+        );
+
+        if(!Objects.equals(member.getTeam().getId(), teamId)) {
+            throw new InvalidBookingMemberException("소속팀의 멤버만 확인할 수 있습니다");
+        }
+
+        List<Booking> bookings = bookingRepository.findBookingsByTeamIdAndDate(teamId, date.atStartOfDay(), date.plusDays(1).atStartOfDay());
+
+        Long totalUsage = bookings.stream()
+                .mapToLong(Booking::getBookingDuration)
+                .sum();
+
+        return new TeamUsageResponse(totalUsage, 240 - totalUsage);
+    }
+
 }
+
+
+
+
+
+
+
+

@@ -4,7 +4,8 @@ import java.util.List;
 
 public record TeamMemberResponse(
         Long memberId,
-        List<MemberInfo> members
+        List<MemberInfo> members,
+        Long teamId
 ) {
     public record MemberInfo(
         Long memberId,
