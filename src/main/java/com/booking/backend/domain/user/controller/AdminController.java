@@ -2,12 +2,14 @@ package com.booking.backend.domain.user.controller;
 
 import com.booking.backend.auth.CustomUserDetails;
 import com.booking.backend.domain.user.dto.AllMemberResponse;
+import com.booking.backend.domain.user.dto.CallRequest;
 import com.booking.backend.domain.user.dto.LockRequest;
 import com.booking.backend.domain.user.dto.LockResponse;
 import com.booking.backend.domain.user.service.AdminService;
 import com.booking.backend.domain.user.service.LockService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,6 +36,15 @@ public class AdminController {
         return ResponseEntity.ok(res);
     }
 
+    @PostMapping("/calls")
+    public ResponseEntity<Void> callMember(@RequestBody CallRequest req) {
+
+        adminService.call(req);
+
+        return ResponseEntity.ok().build();
+    }
+
+    // --- Lock 관련 ---
     @PostMapping("/room-lock")
     public ResponseEntity<LockResponse> createLock(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                    @RequestBody LockRequest req) {

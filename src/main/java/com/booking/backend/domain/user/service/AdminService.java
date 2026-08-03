@@ -1,6 +1,7 @@
 package com.booking.backend.domain.user.service;
 
 import com.booking.backend.domain.user.dto.AllMemberResponse;
+import com.booking.backend.domain.user.dto.CallRequest;
 import com.booking.backend.domain.user.entity.Member;
 import com.booking.backend.domain.user.entity.Team;
 import com.booking.backend.domain.user.repository.MemberRepository;
@@ -48,5 +49,9 @@ public class AdminService {
         }
 
         return res;
+    }
+
+    public void call(CallRequest req) {
+        // TODO 알림 보내는 로직
     }
 }
