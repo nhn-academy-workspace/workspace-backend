@@ -1,4 +1,4 @@
-package com.booking.backend.domain.book;
+package com.booking.backend.domain.book.service;
 
 import com.booking.backend.domain.book.dto.*;
 import com.booking.backend.domain.book.entity.BookStatus;

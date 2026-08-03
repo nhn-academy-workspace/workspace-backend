@@ -1,6 +1,7 @@
-package com.booking.backend.domain.book;
+package com.booking.backend.domain.book.controller;
 
 import com.booking.backend.auth.CustomUserDetails;
+import com.booking.backend.domain.book.service.BookingService;
 import com.booking.backend.domain.book.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

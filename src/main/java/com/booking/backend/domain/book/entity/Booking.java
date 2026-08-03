@@ -73,4 +73,19 @@ public class Booking {
     public Long getBookingDuration() {
         return ChronoUnit.MINUTES.between(startTime, endTime);
     }
+
+    public void setAdjustedAt(LocalDateTime startTime, LocalDateTime endTime, Long taId) {
+        this.originalStartTime = this.startTime;
+        this.originalEndTime = this.endTime;
+
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.adjustedById = taId;
+        this.adjustedAt = LocalDateTime.now();
+    }
+
+    public void cancelled() {
+        this.bookStatus = BookStatus.CANCELLED;
+        // TODO 취소 알림
+    }
 }

@@ -34,6 +34,14 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                                     @Param("startTime") LocalDateTime startTime,
                                     @Param("endTime") LocalDateTime endTime);
 
+    // 겹치는 예약을 가져옴
+    @Query("SELECT b FROM Booking b " +
+            "WHERE b.room.id = :roomId AND b.bookStatus = 'BOOKED' " +
+            "AND (b.startTime < :endTime AND b.endTime > :startTime) ")
+    List<Booking> findConflictBookingAt(@Param("roomId") Long roomId,
+                                  @Param("startTime") LocalDateTime startTime,
+                                  @Param("endTime") LocalDateTime endTime);
+
     // 특정 팀의 해당 날짜 예약을 전부 불러옴
     @Query("SELECT b FROM Booking b " +
             "WHERE b.team.id = :teamId AND b.bookStatus = 'BOOKED' " +
