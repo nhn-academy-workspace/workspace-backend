@@ -10,6 +10,7 @@ import com.booking.backend.domain.user.dto.LockRequest;
 import com.booking.backend.domain.user.dto.LockResponse;
 import com.booking.backend.domain.user.entity.Member;
 import com.booking.backend.domain.user.repository.MemberRepository;
+import com.booking.backend.exception.exception.LockNotFoundException;
 import com.booking.backend.exception.exception.MemberNotFoundException;
 import com.booking.backend.exception.exception.RoomNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -71,5 +72,13 @@ public class LockService {
         Long lockId = roomLockRepository.save(lock).getId();
 
         return new LockResponse(lockId, req.roomId(), req.startTime(), req.endTime(), req.reason());
+    }
+
+    @Transactional
+    public void remove(Long lockId) {
+        if(!roomLockRepository.existsById(lockId)) {
+            throw new LockNotFoundException("해당 Lock을 찾을 수 없습니다. : " + lockId);
+        }
+        roomLockRepository.deleteById(lockId);
     }
 }

@@ -33,7 +33,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(400).body(new BookingFailResponse(message));
     }
 
-    @ExceptionHandler({MemberNotFoundException.class, RoomNotFoundException.class, BookingNotFoundException.class})
+    @ExceptionHandler({MemberNotFoundException.class,
+            RoomNotFoundException.class,
+            BookingNotFoundException.class,
+            LockNotFoundException.class
+    })
     public ResponseEntity<ErrorResponse> notFoundExceptionHandler(Exception e) {
 
         log.debug("⚠️ 404 Not Found: {}", e.getMessage());

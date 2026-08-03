@@ -40,6 +40,12 @@ public class AdminController {
 
         LockResponse res = lockService.create(req, userDetails.getMember().getId());
 
-        return ResponseEntity.ok(res);
+        return ResponseEntity.status(201).body(res);
+    }
+
+    @DeleteMapping("/room-lock/{lockId}")
+    public ResponseEntity<Void> removeLock(@PathVariable Long lockId) {
+        lockService.remove(lockId);
+        return ResponseEntity.status(204).build();
     }
 }
