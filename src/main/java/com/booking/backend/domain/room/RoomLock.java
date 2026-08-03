@@ -2,6 +2,8 @@ package com.booking.backend.domain.room;
 
 import com.booking.backend.domain.user.entity.Member;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -14,6 +16,8 @@ import java.time.LocalDateTime;
 @Table(name = "room_locks")
 @NoArgsConstructor
 @Getter
+@Builder
+@AllArgsConstructor
 public class RoomLock {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
