@@ -1,10 +1,7 @@
 package com.booking.backend.domain.user.controller;
 
 import com.booking.backend.auth.CustomUserDetails;
-import com.booking.backend.domain.user.dto.AllMemberResponse;
-import com.booking.backend.domain.user.dto.CallRequest;
-import com.booking.backend.domain.user.dto.LockRequest;
-import com.booking.backend.domain.user.dto.LockResponse;
+import com.booking.backend.domain.user.dto.*;
 import com.booking.backend.domain.user.service.AdminService;
 import com.booking.backend.domain.user.service.LockService;
 import lombok.RequiredArgsConstructor;
@@ -28,13 +25,22 @@ public class AdminController {
 
 
     @GetMapping("/teams")
-    public ResponseEntity<List<AllMemberResponse>> getAllMember() {
+    public ResponseEntity<List<TeamResponse>> getAllTeams() {
 
-        List<AllMemberResponse> res = adminService.getAll();
+        List<TeamResponse> res = adminService.getAll();
 
         return ResponseEntity.ok(res);
     }
 
+    @GetMapping("/members")
+    public ResponseEntity<List<MemberResponse>> getAllMembers() {
+
+        List<MemberResponse> res = adminService.getAllMembers();
+
+        return ResponseEntity.ok(res);
+    }
+
+    // 호출
     @PostMapping("/calls")
     public ResponseEntity<Void> callMember(@RequestBody CallRequest req) {
 
