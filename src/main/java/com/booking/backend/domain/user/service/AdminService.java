@@ -52,6 +52,6 @@ public class AdminService {
     }
 
     public void call(CallRequest req) {
-        // TODO 알림 보내는 로직
+        // TODO 호출 알림
     }
 }

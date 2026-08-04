@@ -98,6 +98,12 @@ public class LockService {
 
         Long lockId = roomLockRepository.save(lock).getId();
 
+
+
+        // TODO Lock 생성 알림
+
+
+
         return new LockResponse(lockId, req.roomId(), req.startTime(), req.endTime(), req.reason());
     }
 
@@ -107,5 +113,11 @@ public class LockService {
             throw new LockNotFoundException("해당 Lock을 찾을 수 없습니다. : " + lockId);
         }
         roomLockRepository.deleteById(lockId);
+
+
+        // TODO Lock 취소 알림
+        // 필요하면 하셈
+
+
     }
 }

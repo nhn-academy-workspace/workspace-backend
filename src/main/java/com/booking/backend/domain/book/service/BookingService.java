@@ -158,6 +158,11 @@ public class BookingService {
 
         log.debug("✅ 예약 완료 : {}", bookingId);
 
+
+        // TODO 예약 생성 알림
+
+
+
         return new BookingResponse(bookingId, room.getId(), booking.getStartTime(), booking.getEndTime(), booking.getBookStatus());
     }
 
@@ -229,6 +234,8 @@ public class BookingService {
         // ---- 실제 저장 로직 ----
         booking.setEndTime(extendEndTime);
 
+        // TODO 연장 성공 알림
+
         return new ExtendResponse(bookingId, booking.getRoom().getId(), booking.getStartTime(), booking.getEndTime(), booking.getBookStatus());
     }
 
@@ -260,6 +267,10 @@ public class BookingService {
 
         booking.setEndTime(now);
         booking.setBookStatus(BookStatus.EARLY_RETURNED);
+
+
+        // TODO 조기 반납 알림
+        // 필요하면 하셈
 
         return new EarlyReturnResponse(booking.getBookStatus());
     }
