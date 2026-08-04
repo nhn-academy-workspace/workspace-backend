@@ -1,6 +1,7 @@
 package com.booking.backend.domain.user.controller;
 
 import com.booking.backend.auth.CustomUserDetails;
+import com.booking.backend.domain.book.dto.BookingResponse;
 import com.booking.backend.domain.user.dto.*;
 import com.booking.backend.domain.user.service.AdminService;
 import com.booking.backend.domain.user.service.LockService;
@@ -36,6 +37,34 @@ public class AdminController {
     public ResponseEntity<List<MemberResponse>> getAllMembers() {
 
         List<MemberResponse> res = adminService.getAllMembers();
+
+        return ResponseEntity.ok(res);
+    }
+
+    @PatchMapping("/members/{memberId}")
+    public ResponseEntity<MemberResponse> changeTeam(@PathVariable Long memberId,
+                                           @RequestBody TeamChangeRequest req) {
+
+        MemberResponse res = adminService.changeTeam(memberId, req.teamId());
+
+        return ResponseEntity.ok(res);
+    }
+
+    // --- 예약 관련 ---
+    @PatchMapping("/bookings/{bookingId}/adjust")
+    public ResponseEntity<BookingResponse> adjustBooking(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                          @PathVariable Long bookingId,
+                                                          @RequestBody AdjustRequest req) {
+
+        BookingResponse res = adminService.adjustBooking(bookingId, req.startTime(), req.endTime(), userDetails.getMember().getId());
+
+        return ResponseEntity.ok(res);
+    }
+
+    @PatchMapping("/bookings/{bookingId}/cancel")
+    public ResponseEntity<BookingResponse> cancelBooking(@PathVariable Long bookingId) {
+
+        BookingResponse res = adminService.cancelBooking(bookingId);
 
         return ResponseEntity.ok(res);
     }

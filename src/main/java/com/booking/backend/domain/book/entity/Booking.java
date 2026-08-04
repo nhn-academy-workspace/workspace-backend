@@ -75,8 +75,10 @@ public class Booking {
     }
 
     public void setAdjustedAt(LocalDateTime startTime, LocalDateTime endTime, Long taId) {
-        this.originalStartTime = this.startTime;
-        this.originalEndTime = this.endTime;
+        if (this.adjustedAt == null) {
+            this.originalStartTime = this.startTime;
+            this.originalEndTime = this.endTime;
+        }
 
         this.startTime = startTime;
         this.endTime = endTime;

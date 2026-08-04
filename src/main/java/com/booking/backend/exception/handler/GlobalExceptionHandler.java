@@ -36,7 +36,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({MemberNotFoundException.class,
             RoomNotFoundException.class,
             BookingNotFoundException.class,
-            LockNotFoundException.class
+            LockNotFoundException.class,
+            TeamNotFoundException.class
     })
     public ResponseEntity<ErrorResponse> notFoundExceptionHandler(Exception e) {
 
@@ -73,7 +74,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             InvalidCurrentPasswordException.class,
             InvalidNewPasswordException.class,
-            InvalidLockTimeException.class
+            InvalidLockTimeException.class,
+            AlreadySameTeamException.class
     })
     public ResponseEntity<ErrorResponse> badRequestExceptionHandler(Exception e) {
 
