@@ -72,7 +72,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({
             InvalidCurrentPasswordException.class,
-            InvalidNewPasswordException.class
+            InvalidNewPasswordException.class,
+            InvalidLockTimeException.class
     })
     public ResponseEntity<ErrorResponse> badRequestExceptionHandler(Exception e) {
 
