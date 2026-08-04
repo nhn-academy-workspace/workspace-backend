@@ -15,6 +15,7 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id") // TA는 NULL임
     private Team team;
@@ -42,6 +43,7 @@ public class Member {
     private String telegramChatId; // 텔레그램 연동 전까지 null
 
     @Builder.Default
+    @ColumnDefault("true")
     @Column(name = "notification_enabled", nullable = false)
     private boolean notificationEnabled = true;
 

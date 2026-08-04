@@ -4,7 +4,7 @@ import com.booking.backend.domain.user.entity.Member;
 
 import java.util.List;
 
-public record AllMemberResponse(
+public record TeamResponse(
         Long teamId,
         String name,
         List<MemberInfo> members

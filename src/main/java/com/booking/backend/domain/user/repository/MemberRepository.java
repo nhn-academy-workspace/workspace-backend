@@ -22,5 +22,9 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("SELECT m FROM Member m " +
             "WHERE m.role = 'STUDENT' ")
     List<Member> findAllStudent();
+
+    @Query("SELECT m FROM Member m " +
+            "JOIN FETCH m.team WHERE m.role = 'STUDENT'")
+    List<Member> findAllStudentWithTeam();
 }
 
