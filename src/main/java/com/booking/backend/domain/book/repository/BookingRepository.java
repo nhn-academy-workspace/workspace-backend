@@ -64,5 +64,16 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "WHERE b.team.id = :teamId " +
             "ORDER BY b.startTime DESC")
     List<Booking> findByTeamId(@Param("teamId") Long teamId);
+
+    // 알림 스케줄러(NotificationScheduler)의 시작/종료 5분 전 폴링용 — [from, to) 구간에 시작/종료하는 예약 조회
+    @Query("SELECT b FROM Booking b " +
+            "WHERE b.bookStatus = 'BOOKED' " +
+            "AND b.startTime >= :from AND b.startTime < :to")
+    List<Booking> findBookingsStartingBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    @Query("SELECT b FROM Booking b " +
+            "WHERE b.bookStatus = 'BOOKED' " +
+            "AND b.endTime >= :from AND b.endTime < :to")
+    List<Booking> findBookingsEndingBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 }
 

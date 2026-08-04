@@ -10,7 +10,6 @@ import java.util.List;
 
 public interface BookingMemberRepository extends JpaRepository<BookingMember, Long> {
 
-
     @Query("SELECT COUNT(bm) > 0 FROM BookingMember bm " +
             "WHERE bm.member.id IN :memberIds AND bm.booking.bookStatus = 'BOOKED' " +
             "AND bm.booking.startTime < :endTime AND bm.booking.endTime > :startTime ")
@@ -21,4 +20,6 @@ public interface BookingMemberRepository extends JpaRepository<BookingMember, Lo
     @Query("SELECT bm.member.id FROM BookingMember bm " +
             "WHERE bm.booking.id = :bookingId")
     List<Long> findMemberIdByBookingId(@Param("bookingId") Long bookingId);
+
+    List<BookingMember> findByBookingId(Long bookingId);
 }

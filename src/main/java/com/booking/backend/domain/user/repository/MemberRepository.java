@@ -13,6 +13,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Optional<Member> findByLoginId(String loginId);
 
+    Optional<Member> findByTelegramLinkToken(String telegramLinkToken);
+
     List<Member> findByIdIn(List<Long> ids);
 
     @Query("SELECT m FROM Member m " +
@@ -26,5 +28,9 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("SELECT m FROM Member m " +
             "JOIN FETCH m.team WHERE m.role = 'STUDENT'")
     List<Member> findAllStudentWithTeam();
+
+    @Query("SELECT m FROM Member m " +
+            "WHERE m.role = 'TA'")
+    List<Member> findAllTa();
 }
 
