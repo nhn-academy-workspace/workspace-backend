@@ -41,7 +41,7 @@ public class BookingService {
 
         /**
          * 예약 조건
-         * 1. 15분 단위여야 함 ---> 이건 프론트에서 컷 하니까 가드 안해도 되지 않나..?
+         * 1. 15분 단위여야 함
          * 2. 한 번에 최대 두시간이여야 함
          * 3. 팀당 하루 4시간이 최대
          * 4. ~~같은 팀은 연속 예약은 1시간 간격이 필요~~
@@ -52,7 +52,6 @@ public class BookingService {
         Member member = memberRepository.findById(memberId).orElseThrow(
                 () -> new MemberNotFoundException("해당 멤버가 존재하지 않습니다. : " + memberId)
         );
-
 
         LocalDateTime start = req.startTime();
         LocalDateTime end = req.endTime();
@@ -132,6 +131,10 @@ public class BookingService {
             throw new BookingConflictException("해당 시간에는 예약할 수 없습니다.");
         }
 
+        // --- 동일한 멤버가 동일한 시간에 또 다른 예약이 있는지 확인 ----
+        if(bookingMemberRepository.existsByMemberConflict(req.memberIds(), req.startTime(), req.endTime())) {
+            throw new BookingConflictException("해당 시간에 예약 구성원 중 중복된 예약이 존재합니다.");
+        }
 
         // ---- 예약 등록 로직 ----
         Room room = roomRepository.findById(req.roomId()).orElseThrow(
