@@ -278,5 +278,38 @@ public class BookingService {
         return new EarlyReturnResponse(booking.getBookStatus());
     }
 
+    @Transactional
+    public CancelResponse cancel(Long memberId, Long bookingId) {
+        Member member = memberRepository.findById(memberId).orElseThrow(
+                () -> new MemberNotFoundException("해당 멤버를 찾을 수 없습니다. : " + memberId)
+        );
+
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(
+                () -> new BookingNotFoundException("해당 예약을 찾을 수 없습니다. " + bookingId)
+        );
+
+        // 해당 멤버가 맞는지 확인
+        if(!Objects.equals(booking.getTeam().getId(), member.getTeam().getId())) {
+            throw new InvalidBookingMemberException("본인의 소속팀만 취소할 수 있습니다.");
+        }
+
+        // BOOKED 상태인지 확인
+        if(booking.getBookStatus() != BookStatus.BOOKED) {
+            throw new InvalidBookingRequestException("해당 예약은 조기 반납할 수 없습니다.");
+        }
+
+        // 예약 시작 시간 이전에만 취소 가능
+        LocalDateTime now = LocalDateTime.now();
+        if(!now.isBefore(booking.getStartTime())) {
+            throw new InvalidBookingTimeException("취소는 예약 시간 이전에 해야합니다.");
+        }
+
+        // --- 실제 취소 ---
+
+        booking.setBookStatus(BookStatus.CANCELLED);
+
+        return new CancelResponse(BookStatus.CANCELLED);
+    }
+
 
 }

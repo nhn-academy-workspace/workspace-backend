@@ -48,4 +48,13 @@ public class BookingController {
 
         return ResponseEntity.ok(res);
     }
+
+    @PatchMapping("/{bookingId}/cancel")
+    public ResponseEntity<CancelResponse> cancelBooking(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                        @PathVariable Long bookingId) {
+
+        CancelResponse res = bookingService.cancel(userDetails.getMember().getId(), bookingId);
+
+        return ResponseEntity.ok(res);
+    }
 }
