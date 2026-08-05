@@ -234,6 +234,11 @@ public class BookingService {
             throw new BookingConflictException("해당 시간에는 예약할 수 없습니다.");
         }
 
+        List<Long> memberIds = bookingMemberRepository.findMemberIdByBookingId(bookingId);
+        if(bookingMemberRepository.existsByMemberConflict(memberIds, booking.getEndTime(), req.endTime())) {
+            throw new BookingConflictException("해당 시간에 예약 구성원 중 중복된 예약이 존재합니다.");
+        }
+
         // ---- 실제 저장 로직 ----
         booking.setEndTime(extendEndTime);
 

@@ -17,4 +17,8 @@ public interface BookingMemberRepository extends JpaRepository<BookingMember, Lo
     boolean existsByMemberConflict(@Param("memberIds") List<Long> memberIds,
                                    @Param("startTime") LocalDateTime startTime,
                                    @Param("endTime") LocalDateTime endTime);
+
+    @Query("SELECT bm.member.id FROM BookingMember bm " +
+            "WHERE bm.booking.id = :bookingId")
+    List<Long> findMemberIdByBookingId(@Param("bookingId") Long bookingId);
 }
