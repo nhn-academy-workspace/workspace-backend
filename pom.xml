@@ -40,6 +40,16 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+        <!-- 알림 재시도: TelegramNotificationSender.send()의 @Retryable용 -->
+        <dependency>
+            <groupId>org.springframework.retry</groupId>
+            <artifactId>spring-retry</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
         <!-- 세션 인증: spring-boot-starter-security가 기본 제공(폼 로그인 대신 커스텀 로그인 API +
              HttpSession 사용 예정). 별도 토큰 라이브러리 불필요. -->
 

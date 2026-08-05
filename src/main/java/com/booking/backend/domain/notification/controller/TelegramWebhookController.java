@@ -1,6 +1,6 @@
 package com.booking.backend.domain.notification.controller;
 
-import com.booking.backend.domain.notification.exception.NotValidSecretTokenException;
+import com.booking.backend.exception.exception.NotValidSecretTokenException;
 import com.booking.backend.domain.notification.service.TelegramLinkService;
 import com.booking.backend.domain.notification.telegram.TelegramProperties;
 import com.booking.backend.domain.notification.telegram.TelegramUpdateRequest;

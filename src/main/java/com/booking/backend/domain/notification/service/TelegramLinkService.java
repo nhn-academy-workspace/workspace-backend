@@ -1,6 +1,6 @@
 package com.booking.backend.domain.notification.service;
 
-import com.booking.backend.domain.notification.exception.NotValidBotUsernameException;
+import com.booking.backend.exception.exception.NotValidBotUsernameException;
 import com.booking.backend.domain.notification.telegram.TelegramClient;
 import com.booking.backend.domain.notification.telegram.TelegramProperties;
 import com.booking.backend.domain.user.entity.Member;
@@ -35,10 +35,10 @@ public class TelegramLinkService {
 
     @Transactional
     public void completeLink(String token, Long chatId) {
-        if(memberRepository.findByTelegramLinkToken(token).isEmpty()){
+        Member member = memberRepository.findByTelegramLinkToken(token).orElse(null);
+        if(member == null){
             return;
         }
-        Member member = memberRepository.findByTelegramLinkToken(token).get();
         member.linkChat(chatId);
 
         try {
