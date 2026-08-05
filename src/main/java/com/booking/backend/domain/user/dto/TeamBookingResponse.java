@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 public record TeamBookingResponse(
         Long bookingId,
+        Long roomId,
         String roomName,
         LocalDateTime startTime,
         LocalDateTime endTime,
@@ -16,6 +17,7 @@ public record TeamBookingResponse(
 ) {
     public TeamBookingResponse(Booking booking) {
         this(booking.getId(),
+                booking.getRoom().getId(),
                 booking.getRoom().getName(),
                 booking.getStartTime(),
                 booking.getEndTime(),
