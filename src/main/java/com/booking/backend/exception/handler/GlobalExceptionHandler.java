@@ -89,5 +89,20 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(400).body(res);
     }
+
+    @ExceptionHandler(NotificationException.class)
+    public ResponseEntity<ErrorResponse> notificationExceptionHandler(NotificationException e){
+        int status = e.getStatus().value();
+
+        log.debug("{} : {}", status, e.getMessage());
+        ErrorResponse res = new ErrorResponse(
+                e.getStatus().value(),
+                e.getMessage(),
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(status).body(res);
+    }
+
 }
 
