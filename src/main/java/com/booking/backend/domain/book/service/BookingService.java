@@ -6,6 +6,8 @@ import com.booking.backend.domain.book.entity.Booking;
 import com.booking.backend.domain.book.entity.BookingMember;
 import com.booking.backend.domain.book.repository.BookingMemberRepository;
 import com.booking.backend.domain.book.repository.BookingRepository;
+import com.booking.backend.domain.notification.entity.NotiType;
+import com.booking.backend.domain.notification.event.NotificationRequestedEvent;
 import com.booking.backend.domain.room.Room;
 import com.booking.backend.domain.room.repository.RoomLockRepository;
 import com.booking.backend.domain.room.repository.RoomRepository;
@@ -14,6 +16,7 @@ import com.booking.backend.domain.user.repository.MemberRepository;
 import com.booking.backend.exception.exception.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +37,7 @@ public class BookingService {
     private final RoomRepository roomRepository;
     private final BookingMemberRepository bookingMemberRepository;
     private final RoomLockRepository roomLockRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
 
     @Transactional
@@ -161,11 +165,6 @@ public class BookingService {
 
         log.debug("✅ 예약 완료 : {}", bookingId);
 
-
-        // TODO 예약 생성 알림
-
-
-
         return new BookingResponse(bookingId, room.getId(), booking.getStartTime(), booking.getEndTime(), booking.getBookStatus());
     }
 
@@ -242,7 +241,7 @@ public class BookingService {
         // ---- 실제 저장 로직 ----
         booking.setEndTime(extendEndTime);
 
-        // TODO 연장 성공 알림
+        eventPublisher.publishEvent(new NotificationRequestedEvent(bookingId, NotiType.TIME_CHANGED));
 
         return new ExtendResponse(bookingId, booking.getRoom().getId(), booking.getStartTime(), booking.getEndTime(), booking.getBookStatus());
     }
@@ -276,10 +275,6 @@ public class BookingService {
         booking.setEndTime(now);
         booking.setBookStatus(BookStatus.EARLY_RETURNED);
 
-
-        // TODO 조기 반납 알림
-        // 필요하면 하셈
-
         return new EarlyReturnResponse(booking.getBookStatus());
     }
 
@@ -312,6 +307,7 @@ public class BookingService {
         // --- 실제 취소 ---
 
         booking.setBookStatus(BookStatus.CANCELLED);
+        eventPublisher.publishEvent(new NotificationRequestedEvent(bookingId, NotiType.CANCELLED));
 
         return new CancelResponse(BookStatus.CANCELLED);
     }

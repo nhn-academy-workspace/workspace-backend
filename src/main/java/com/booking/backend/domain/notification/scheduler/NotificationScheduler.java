@@ -52,7 +52,7 @@ public class NotificationScheduler {
     // 예약 하나 처리 중 예외가 나도 같은 폴링 사이클의 나머지 예약은 계속 처리되도록 격리
     private void createRemindersSafely(Booking booking, NotiType notiType) {
         try {
-            notificationService.createReminders(booking, notiType);
+            notificationService.notifyBooking(booking, notiType);
         } catch (Exception e) {
             log.error("알림 생성 실패 | bookingId={}, notiType={}", booking.getId(), notiType, e);
         }
