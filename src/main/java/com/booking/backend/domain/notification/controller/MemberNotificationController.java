@@ -18,7 +18,6 @@ public class MemberNotificationController {
     private final TelegramLinkService telegramLinkService;
     private final NotificationService notificationService;
 
-    // TODO: 프론트에서 버튼 눌러서 직접 텔레그램 연동하게 만들어야 함
     @PostMapping("/me/telegram-link")
     public ResponseEntity<TelegramLinkResponse> startLink(@AuthenticationPrincipal CustomUserDetails userDetails) {
         String deepLink = telegramLinkService.startLink(userDetails.getMember());

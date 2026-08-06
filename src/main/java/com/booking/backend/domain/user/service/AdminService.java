@@ -3,22 +3,21 @@ package com.booking.backend.domain.user.service;
 import com.booking.backend.domain.book.dto.BookingResponse;
 import com.booking.backend.domain.book.entity.Booking;
 import com.booking.backend.domain.book.repository.BookingRepository;
+import com.booking.backend.domain.notification.entity.NotiType;
+import com.booking.backend.domain.notification.event.CallRequestEvent;
+import com.booking.backend.domain.notification.event.NotificationRequestedEvent;
+import com.booking.backend.domain.user.dto.CallRequest;
 import com.booking.backend.domain.user.dto.MemberResponse;
 import com.booking.backend.domain.user.dto.TeamResponse;
-import com.booking.backend.domain.user.dto.CallRequest;
 import com.booking.backend.domain.user.entity.Member;
 import com.booking.backend.domain.user.entity.Role;
 import com.booking.backend.domain.user.entity.Team;
 import com.booking.backend.domain.user.repository.MemberRepository;
 import com.booking.backend.domain.user.repository.TeamRepository;
-import com.booking.backend.exception.exception.AlreadySameTeamException;
-import com.booking.backend.exception.exception.BookingNotFoundException;
-import com.booking.backend.exception.exception.InvalidBookingMemberException;
-import com.booking.backend.exception.exception.InvalidBookingTimeException;
-import com.booking.backend.exception.exception.MemberNotFoundException;
-import com.booking.backend.exception.exception.TeamNotFoundException;
+import com.booking.backend.exception.exception.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +37,7 @@ public class AdminService {
     private final MemberRepository memberRepository;
     private final TeamRepository teamRepository;
     private final BookingRepository bookingRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
     public List<TeamResponse> getAll() {
@@ -112,7 +112,8 @@ public class AdminService {
 
         booking.setAdjustedAt(startTime, endTime, taId);
 
-        // TODO TA에 의한 예약 조정 알림
+        eventPublisher.publishEvent(new NotificationRequestedEvent(bookingId, NotiType.TIME_CHANGED));
+
 
         return new BookingResponse(booking.getId(), booking.getRoom().getId(), booking.getStartTime(), booking.getEndTime(), booking.getBookStatus());
     }
@@ -125,13 +126,13 @@ public class AdminService {
 
         booking.cancelled();
 
-        // TODO TA에 의한 예약 취소 알림
+        eventPublisher.publishEvent(new NotificationRequestedEvent(bookingId, NotiType.CANCELLED));
 
         return new BookingResponse(booking.getId(), booking.getRoom().getId(), booking.getStartTime(), booking.getEndTime(), booking.getBookStatus());
     }
 
-    @Transactional // 여기도 트랜잭션 달아야함?
+    @Transactional
     public void call(CallRequest req) {
-        // TODO 호출 알림
+        eventPublisher.publishEvent(new CallRequestEvent(req.targetType(), req.targetId(), req.message()));
     }
 }

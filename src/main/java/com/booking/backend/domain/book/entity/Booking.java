@@ -88,6 +88,5 @@ public class Booking {
 
     public void cancelled() {
         this.bookStatus = BookStatus.CANCELLED;
-        // TODO 취소 알림
     }
 }
