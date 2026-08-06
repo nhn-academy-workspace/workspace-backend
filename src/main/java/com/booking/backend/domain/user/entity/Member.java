@@ -39,23 +39,31 @@ public class Member {
     @Column(name = "must_change_password", nullable = false)
     private boolean mustChangePassword;
 
-    @Column(name = "telegram_chat_id")
-    private String telegramChatId; // 텔레그램 연동 전까지 null
+    @Column(name = "telegram_link_token", unique = true)
+    private String telegramLinkToken;
+
+    @Column(name = "chat_id")
+    private Long chatId; // 텔레그램 연동 전까지 null
 
     @Builder.Default
     @ColumnDefault("true")
     @Column(name = "notification_enabled", nullable = false)
     private boolean notificationEnabled = true;
 
-    public void linkTelegram(String chatId) {
-        this.telegramChatId = chatId;
+    public void issueTelegramLinkToken(String token) {
+        this.telegramLinkToken = token;
+    }
+
+    public void linkChat(Long chatId) {
+        this.chatId = chatId;
+        this.telegramLinkToken = null; // 1회용 토큰이므로 연동 완료 시 초기화
     }
 
     public void updateNotificationPreference(boolean enabled) {
         this.notificationEnabled = enabled;
     }
 
-    public boolean hasTelegramLinked() {
-        return telegramChatId != null;
+    public boolean hasChatLinked() {
+        return chatId != null;
     }
 }

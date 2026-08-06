@@ -1,4 +1,4 @@
-package com.booking.backend.domain.notification;
+package com.booking.backend.domain.notification.entity;
 
 import com.booking.backend.domain.book.entity.Booking;
 import jakarta.persistence.*;

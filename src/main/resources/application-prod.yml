@@ -7,3 +7,8 @@ spring:
   sql:
     init:
       mode: never
+
+telegram:
+  bot-token: ${TELEGRAM_BOT_TOKEN}
+  bot-username: ${TELEGRAM_BOT_USERNAME}
+  webhook-secret: ${TELEGRAM_WEBHOOK_SECRET}

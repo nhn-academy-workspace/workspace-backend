@@ -1,4 +1,4 @@
-package com.booking.backend.domain.notification;
+package com.booking.backend.domain.notification.entity;
 
 public enum NotiType {
     START_REMINDER, // 시작 알림
