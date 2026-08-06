@@ -2,6 +2,8 @@ package com.booking.backend.domain.user.service;
 
 import com.booking.backend.domain.book.entity.Booking;
 import com.booking.backend.domain.book.repository.BookingRepository;
+import com.booking.backend.domain.notification.entity.NotiType;
+import com.booking.backend.domain.notification.event.NotificationRequestedEvent;
 import com.booking.backend.domain.room.Room;
 import com.booking.backend.domain.room.RoomLock;
 import com.booking.backend.domain.room.repository.RoomLockRepository;
@@ -10,9 +12,13 @@ import com.booking.backend.domain.user.dto.LockRequest;
 import com.booking.backend.domain.user.dto.LockResponse;
 import com.booking.backend.domain.user.entity.Member;
 import com.booking.backend.domain.user.repository.MemberRepository;
-import com.booking.backend.exception.exception.*;
+import com.booking.backend.exception.exception.InvalidLockTimeException;
+import com.booking.backend.exception.exception.LockNotFoundException;
+import com.booking.backend.exception.exception.MemberNotFoundException;
+import com.booking.backend.exception.exception.RoomNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +37,7 @@ public class LockService {
     private final BookingRepository bookingRepository;
     private final RoomRepository roomRepository;
     private final MemberRepository memberRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public LockResponse create(LockRequest req, Long taId) {
@@ -77,14 +84,18 @@ public class LockService {
             if (start.isBefore(req.startTime()) && (end.isBefore(req.endTime()) || end.isEqual(req.endTime()))) {  // 예약이 앞에 있는 경우
                 // end 수정
                 b.setAdjustedAt(start, req.startTime(), taId);
+                eventPublisher.publishEvent(new NotificationRequestedEvent(b.getId(), NotiType.TIME_CHANGED));
             } else if ((start.isAfter(req.startTime()) || start.isEqual(req.startTime())) && end.isAfter(req.endTime())) { // 예약이 뒤에 걸친 경우
                 b.setAdjustedAt(req.endTime(), end, taId);
+                eventPublisher.publishEvent(new NotificationRequestedEvent(b.getId(), NotiType.TIME_CHANGED));
                 // start 수정
             } else if (start.isBefore(req.startTime()) && end.isAfter(req.endTime())) { // 예약을 가운데 걸친 경우
                 b.setAdjustedAt(start, req.startTime(), taId);
+                eventPublisher.publishEvent(new NotificationRequestedEvent(b.getId(), NotiType.TIME_CHANGED));
             } else { // 그외 경우, 다 덮는 경우
                 // 아예 취소
                 b.cancelled();
+                eventPublisher.publishEvent(new NotificationRequestedEvent(b.getId(), NotiType.CANCELLED));
             }
         }
 
@@ -98,12 +109,6 @@ public class LockService {
 
         Long lockId = roomLockRepository.save(lock).getId();
 
-
-
-        // TODO Lock 생성 알림
-
-
-
         return new LockResponse(lockId, req.roomId(), req.startTime(), req.endTime(), req.reason());
     }
 
@@ -113,11 +118,5 @@ public class LockService {
             throw new LockNotFoundException("해당 Lock을 찾을 수 없습니다. : " + lockId);
         }
         roomLockRepository.deleteById(lockId);
-
-
-        // TODO Lock 취소 알림
-        // 필요하면 하셈
-
-
     }
 }

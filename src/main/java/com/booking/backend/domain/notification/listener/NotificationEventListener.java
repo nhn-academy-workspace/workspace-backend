@@ -33,4 +33,11 @@ public class NotificationEventListener {
         Booking booking = bookingRepository.findById(event.bookingId()).orElseThrow(()->new BookingNotFoundException("존재하지 않는 예약 아이디: 알림 전송 실패"));
         notificationService.notifyBooking(booking, event.notiType());
     }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handle(CallRequestEvent event) {
+        log.debug("호출 이벤트 수신: {}", event);
+        notificationService.notifyCall(event.targetType(), event.targetId(), event.message());
+    }
 }

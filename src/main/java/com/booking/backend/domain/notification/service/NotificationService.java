@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 import static com.booking.backend.domain.notification.entity.NotificationChannel.TELEGRAM;
 import static com.booking.backend.domain.notification.entity.TargetType.MEMBER;
 
-// notification-design.md #4 — "누구에게, 무엇을, 한 번만" 보내지는지를 결정하는 도메인 로직의 중심.
+// 누구에게, 무엇을, 몇 번 보내지는지를 결정
 // NotificationEventListener와 NotificationScheduler 양쪽에서 호출됨.
 @Slf4j
 @Service
@@ -70,6 +70,22 @@ public class NotificationService {
                 .orElse(List.of());
     }
 
+    // 호출 대상(개인 또는 팀) + 전체 TA(담당 구분 없이 누구나 호출 가능하므로)
+    @Transactional
+    public void notifyCall(TargetType type, Long targetId, String message) {
+        List<Member> targets = switch (type) {
+            case MEMBER -> List.of(memberRepository.findById(targetId)
+                    .orElseThrow(() -> new MemberNotFoundException("해당 멤버가 존재하지 않습니다. : " + targetId)));
+            case TEAM -> memberRepository.findByTeamId(targetId);
+        };
+        List<Member> taList = memberRepository.findAllTa();
+
+        Stream.concat(targets.stream(), taList.stream())
+                .distinct()
+                .filter(Member::isNotificationEnabled)
+                .forEach(member -> createSingleCall(member, message));
+    }
+
     private void createSingleReminder(Booking booking, NotiType notiType, Member member, String message) {
         boolean alreadyExists = notificationRepository
                 .existsByBookingAndNotiTypeAndTargetTypeAndTargetId(booking, notiType, MEMBER, member.getId());
@@ -89,7 +105,15 @@ public class NotificationService {
         notificationSender.send(notification);
     }
 
-    private String buildReminderMessage(Booking booking, NotiType notiType) {
+    // CALL은 book_id가 항상 null이라 UNIQUE(book_id, type, target_id) 멱등성 제약이 무력화됨(NULL은 서로 다른 값 취급).
+    // 문제 없음 — CALL은 폴링이 아니라 단발성 HTTP 호출이라 애초에 중복 발송 위험 자체가 없음(concepts.md 참고).
+    private void createSingleCall(Member member, String message) {
+        Notification notification = Notification.createPending(null, NotiType.CALL, MEMBER, member.getId(), TELEGRAM, message);
+        notificationRepository.save(notification);
+        notificationSender.send(notification);
+    }
+
+    private String buildBookingMessage(Booking booking, NotiType notiType) {
         String roomName = booking.getRoom().getName();
         return switch (notiType) {
             case START_REMINDER -> "[%s] 예약이 5분 후(%s) 시작합니다.".formatted(roomName, booking.getStartTime());
