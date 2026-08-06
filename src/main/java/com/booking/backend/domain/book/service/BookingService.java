@@ -300,7 +300,7 @@ public class BookingService {
 
         // BOOKED 상태인지 확인
         if(booking.getBookStatus() != BookStatus.BOOKED) {
-            throw new InvalidBookingRequestException("해당 예약은 조기 반납할 수 없습니다.");
+            throw new InvalidBookingRequestException("해당 예약은 취소할 수 없습니다.");
         }
 
         // 예약 시작 시간 이전에만 취소 가능
