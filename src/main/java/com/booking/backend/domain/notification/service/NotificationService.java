@@ -170,4 +170,13 @@ public class NotificationService {
                 .orElseThrow(() -> new MemberNotFoundException("해당 멤버가 존재하지 않습니다. : " + targetMemberId));
         target.updateNotificationPreference(enabled);
     }
+
+    // 세션에 캐시된 CustomUserDetails.member는 로그인 시점 스냅샷이라 연동 여부가 최신이 아닐 수 있음 —
+    // 그래서 매번 DB에서 다시 조회함(MemberNotificationController#getTelegramLinkStatus가 호출).
+    @Transactional(readOnly = true)
+    public boolean isChatLinked(Long memberId) {
+        return memberRepository.findById(memberId)
+                .map(Member::hasChatLinked)
+                .orElse(false);
+    }
 }
