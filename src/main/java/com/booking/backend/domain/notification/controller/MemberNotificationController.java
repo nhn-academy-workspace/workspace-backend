@@ -28,7 +28,7 @@ public class MemberNotificationController {
 
     @PostMapping("/me/telegram-link")
     public ResponseEntity<TelegramLinkResponse> startLink(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        String deepLink = telegramLinkService.startLink(userDetails.getMember());
+        String deepLink = telegramLinkService.startLink(userDetails.getMember().getId());
 
         return ResponseEntity.ok(new TelegramLinkResponse(deepLink));
     }

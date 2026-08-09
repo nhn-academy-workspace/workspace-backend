@@ -25,10 +25,11 @@ public class TelegramWebhookController {
 
     @PostMapping("/webhook")
     public ResponseEntity<Void> handleWebhook(
-            @RequestHeader(SECRET_TOKEN_HEADER) String secretToken,
+            @RequestHeader(value = SECRET_TOKEN_HEADER, required = false) String secretToken,
             @RequestBody TelegramUpdateRequest update) {
 
-        if(!secretToken.equals(properties.webhookSecret())){
+        if(secretToken == null || !secretToken.equals(properties.webhookSecret())){
+            log.warn("텔레그램 웹훅 시크릿 불일치 or 누락");
             throw new NotValidSecretTokenException("Webhook secret-token이 일치하지 않습니다.");
         }
 

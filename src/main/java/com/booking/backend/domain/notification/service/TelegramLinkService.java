@@ -1,5 +1,6 @@
 package com.booking.backend.domain.notification.service;
 
+import com.booking.backend.exception.exception.MemberNotFoundException;
 import com.booking.backend.exception.exception.NotValidBotUsernameException;
 import com.booking.backend.domain.notification.telegram.TelegramClient;
 import com.booking.backend.domain.notification.telegram.TelegramProperties;
@@ -22,8 +23,16 @@ public class TelegramLinkService {
     private final TelegramClient telegramClient;
     private final TelegramProperties properties;
 
+
+    /**
+     * @Transactional이 새 영속성 컨텍스트를 열긴 하지만, 파라미터로 member를 받으면 member객체가 영속성 컨텍스트에 편입되지 않아서
+     * 토큰 필드를 변경해도 더티 체킹 대상이 아니라 update 쿼리가 발생하지 않기 떄문에 DB에 토큰이 저장되지 않음.
+     */
     @Transactional
-    public String startLink(Member member) {
+    public String startLink(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(()->new MemberNotFoundException("존재하지 않는 회원입니다."));
+
         String token = UUID.randomUUID().toString();
         member.issueTelegramLinkToken(token);
 
