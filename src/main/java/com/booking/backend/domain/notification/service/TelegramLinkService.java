@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
-// notification-design.md #6 — 온보딩(딥링크+웹훅) 흐름의 도메인 로직.
+// notification-design — 온보딩(딥링크+웹훅) 흐름의 도메인 로직.
 @Slf4j
 @Service
 @RequiredArgsConstructor

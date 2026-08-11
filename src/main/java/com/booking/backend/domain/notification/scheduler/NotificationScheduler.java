@@ -4,6 +4,7 @@ import com.booking.backend.domain.book.entity.Booking;
 import com.booking.backend.domain.book.repository.BookingRepository;
 import com.booking.backend.domain.notification.entity.NotiType;
 import com.booking.backend.domain.notification.service.NotificationService;
+import com.booking.backend.domain.notification.service.ReminderSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -28,6 +29,7 @@ public class NotificationScheduler {
 
     private final NotificationService notificationService;
     private final BookingRepository bookingRepository;
+    private final ReminderSender reminderSender;
 
     @Scheduled(fixedRate = 60_000)
     public void pollStartReminders() {
@@ -61,6 +63,6 @@ public class NotificationScheduler {
     // spring-retry의 @Retryable이 이미 실패한 뒤, 더 느슨한 주기로 다시 시도
     @Scheduled(fixedRate = 300_000)
     public void retryFailedSweep() {
-        notificationService.retryFailed();
+        reminderSender.retryFailed();
     }
 }
