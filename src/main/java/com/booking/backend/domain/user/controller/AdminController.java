@@ -71,9 +71,10 @@ public class AdminController {
 
     // 호출
     @PostMapping("/calls")
-    public ResponseEntity<Void> callMember(@RequestBody CallRequest req) {
+    public ResponseEntity<Void> callMember(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                           @RequestBody CallRequest req) {
 
-        adminService.call(req);
+        adminService.call(req, userDetails.getMember().getId());
 
         return ResponseEntity.ok().build();
     }

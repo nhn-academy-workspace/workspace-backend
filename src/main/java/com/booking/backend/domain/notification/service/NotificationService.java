@@ -8,14 +8,14 @@ import com.booking.backend.domain.notification.entity.NotiType;
 import com.booking.backend.domain.notification.entity.Notification;
 import com.booking.backend.domain.notification.entity.NotificationStatus;
 import com.booking.backend.domain.notification.entity.TargetType;
-import com.booking.backend.exception.exception.InsufficientPermissionException;
-import com.booking.backend.exception.exception.ReminderMessageException;
 import com.booking.backend.domain.notification.repository.NotificationRepository;
 import com.booking.backend.domain.user.entity.Member;
 import com.booking.backend.domain.user.entity.Role;
 import com.booking.backend.domain.user.repository.MemberRepository;
+import com.booking.backend.exception.exception.InsufficientPermissionException;
 import com.booking.backend.exception.exception.MemberNotFoundException;
 import com.booking.backend.exception.exception.NotificationNotFoundException;
+import com.booking.backend.exception.exception.ReminderMessageException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -55,12 +55,12 @@ public class NotificationService {
         String message = buildBookingMessage(booking, notiType);
 
         Stream.concat(participants.stream(), teamTa.stream())
-                .distinct() // 같은 영속성 컨텍스트 내 조회라 동일 PK는 동일 인스턴스로 반환됨(Hibernate 1차 캐시)
+                .distinct() // 같은 영속성 컨텍스트 내 조회라 동일 PK는 동일 인스턴스로 반환
                 .filter(Member::isNotificationEnabled)
                 .forEach(member -> createSingleReminder(booking, notiType, member, message));
     }
 
-    // 팀 전담 TA 한 명만 대상으로 함(전체 TA 아님) — taId 미배정이면 빈 리스트
+    // 팀 전담 TA 찾기
     private List<Member> resolveTeamTa(Long taId) {
         if (taId == null) {
             return List.of();
@@ -70,17 +70,18 @@ public class NotificationService {
                 .orElse(List.of());
     }
 
-    // 호출 대상(개인 또는 팀) + 전체 TA(담당 구분 없이 누구나 호출 가능하므로)
+    // 호출 대상(개인/팀), 호출을 건 TA
     @Transactional
-    public void notifyCall(TargetType type, Long targetId, String message) {
+    public void notifyCall(TargetType type, Long targetId, Long callerId, String message) {
         List<Member> targets = switch (type) {
             case MEMBER -> List.of(memberRepository.findById(targetId)
                     .orElseThrow(() -> new MemberNotFoundException("해당 멤버가 존재하지 않습니다. : " + targetId)));
             case TEAM -> memberRepository.findByTeamId(targetId);
         };
-        List<Member> taList = memberRepository.findAllTa();
+        Member caller = memberRepository.findById(callerId)
+                .orElseThrow(() -> new MemberNotFoundException("호출한 TA가 존재하지 않습니다. : " + callerId));
 
-        Stream.concat(targets.stream(), taList.stream())
+        Stream.concat(targets.stream(), Stream.of(caller))
                 .distinct()
                 .filter(Member::isNotificationEnabled)
                 .forEach(member -> createSingleCall(member, message));
@@ -106,7 +107,7 @@ public class NotificationService {
     }
 
     // CALL은 book_id가 항상 null이라 UNIQUE(book_id, type, target_id) 멱등성 제약이 무력화됨(NULL은 서로 다른 값 취급).
-    // 문제 없음 — CALL은 폴링이 아니라 단발성 HTTP 호출이라 애초에 중복 발송 위험 자체가 없음(concepts.md 참고).
+    // 문제 없음 — CALL은 폴링이 아니라 단발성 HTTP 호출이라 애초에 중복 발송 위험 자체가 없음
     private void createSingleCall(Member member, String message) {
         Notification notification = Notification.createPending(null, NotiType.CALL, MEMBER, member.getId(), TELEGRAM, message);
         notificationRepository.save(notification);
@@ -125,13 +126,15 @@ public class NotificationService {
     }
 
     // NotificationScheduler의 재시도 스윕이 호출. spring-retry의 @Retryable이 이미 실패한 뒤,
-    // 시간이 좀 지나서 다시 시도하는 더 느슨한 세이프티넷 (역할이 달라서 중복 아님).
+    // 시간이 좀 지나서 다시 시도하는 더 느슨한 세이프티넷
     @Transactional
     public void retryFailed() {
         List<Notification> notificationList = notificationRepository.findByStatusIn(List.of(NotificationStatus.FAILED));
 
         notificationList.stream()
                 .filter(notification -> notification.getRetryCount() < MAX_RETRY_COUNT)
+                // 연동 전에 미리 보내졌던 알림들이 연동 후에 한번에 오지 않도록 NOT_LINKED_REASON 메시지 제외
+                .filter(notification -> !TelegramNotificationSender.NOT_LINKED_REASON.equals(notification.getFailureReason()))
                 .forEach(notificationSender::send);
     }
 

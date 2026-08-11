@@ -38,6 +38,6 @@ public class NotificationEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(CallRequestEvent event) {
         log.debug("호출 이벤트 수신: {}", event);
-        notificationService.notifyCall(event.targetType(), event.targetId(), event.message());
+        notificationService.notifyCall(event.targetType(), event.targetId(), event.callerId(), event.message());
     }
 }
