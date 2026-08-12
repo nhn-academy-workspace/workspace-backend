@@ -19,6 +19,9 @@ import org.springframework.web.client.RestClientException;
 @RequiredArgsConstructor
 public class TelegramNotificationSender implements NotificationSender {
 
+    // 연동 전에 온 메시지들은 전송 실패가 아니므로 재시도 시 전송 대상에서 제외
+    public static final String NOT_LINKED_REASON = "텔레그램 미연동";
+
     private final TelegramClient telegramClient;
     private final MemberRepository memberRepository;
 
@@ -30,7 +33,7 @@ public class TelegramNotificationSender implements NotificationSender {
                 .orElseThrow(() -> new MemberNotFoundException("해당 멤버가 존재하지 않습니다. : " + notification.getTargetId()));
 
         if (member.getChatId() == null) {
-            notification.markFailed("텔레그램 미연동");
+            notification.markFailed(NOT_LINKED_REASON);
             return;
         }
 

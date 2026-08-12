@@ -6,19 +6,17 @@ import com.booking.backend.domain.book.repository.BookingMemberRepository;
 import com.booking.backend.domain.notification.dto.NotificationResponse;
 import com.booking.backend.domain.notification.entity.NotiType;
 import com.booking.backend.domain.notification.entity.Notification;
-import com.booking.backend.domain.notification.entity.NotificationStatus;
 import com.booking.backend.domain.notification.entity.TargetType;
-import com.booking.backend.exception.exception.InsufficientPermissionException;
-import com.booking.backend.exception.exception.ReminderMessageException;
 import com.booking.backend.domain.notification.repository.NotificationRepository;
 import com.booking.backend.domain.user.entity.Member;
 import com.booking.backend.domain.user.entity.Role;
 import com.booking.backend.domain.user.repository.MemberRepository;
+import com.booking.backend.exception.exception.InsufficientPermissionException;
 import com.booking.backend.exception.exception.MemberNotFoundException;
 import com.booking.backend.exception.exception.NotificationNotFoundException;
+import com.booking.backend.exception.exception.ReminderMessageException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +39,7 @@ public class NotificationService {
     private final BookingMemberRepository bookingMemberRepository;
     private final NotificationSender notificationSender;
 
-    private static final int MAX_RETRY_COUNT = 3;
+    private final ReminderSender reminderSender;
 
     // NotificationScheduler가 시작/종료 5분 전 대상 예약마다 호출.
     // 팀 담당 TA만 보냄
@@ -55,12 +53,12 @@ public class NotificationService {
         String message = buildBookingMessage(booking, notiType);
 
         Stream.concat(participants.stream(), teamTa.stream())
-                .distinct() // 같은 영속성 컨텍스트 내 조회라 동일 PK는 동일 인스턴스로 반환됨(Hibernate 1차 캐시)
+                .distinct() // 같은 영속성 컨텍스트 내 조회라 동일 PK는 동일 인스턴스로 반환
                 .filter(Member::isNotificationEnabled)
-                .forEach(member -> createSingleReminder(booking, notiType, member, message));
+                .forEach(member -> reminderSender.sendOne(booking, notiType, member, message));
     }
 
-    // 팀 전담 TA 한 명만 대상으로 함(전체 TA 아님) — taId 미배정이면 빈 리스트
+    // 팀 전담 TA 찾기
     private List<Member> resolveTeamTa(Long taId) {
         if (taId == null) {
             return List.of();
@@ -70,43 +68,24 @@ public class NotificationService {
                 .orElse(List.of());
     }
 
-    // 호출 대상(개인 또는 팀) + 전체 TA(담당 구분 없이 누구나 호출 가능하므로)
+    // 호출 대상(개인/팀), 호출을 건 TA
     @Transactional
-    public void notifyCall(TargetType type, Long targetId, String message) {
+    public void notifyCall(TargetType type, Long targetId, Long callerId, String message) {
         List<Member> targets = switch (type) {
             case MEMBER -> List.of(memberRepository.findById(targetId)
                     .orElseThrow(() -> new MemberNotFoundException("해당 멤버가 존재하지 않습니다. : " + targetId)));
             case TEAM -> memberRepository.findByTeamId(targetId);
         };
-        List<Member> taList = memberRepository.findAllTa();
+        Member caller = memberRepository.findById(callerId)
+                .orElseThrow(() -> new MemberNotFoundException("호출한 TA가 존재하지 않습니다. : " + callerId));
 
-        Stream.concat(targets.stream(), taList.stream())
+        Stream.concat(targets.stream(), Stream.of(caller))
                 .distinct()
                 .filter(Member::isNotificationEnabled)
                 .forEach(member -> createSingleCall(member, message));
     }
 
-    private void createSingleReminder(Booking booking, NotiType notiType, Member member, String message) {
-        boolean alreadyExists = notificationRepository
-                .existsByBookingAndNotiTypeAndTargetTypeAndTargetId(booking, notiType, MEMBER, member.getId());
-        if (alreadyExists) {
-            return;
-        }
 
-        Notification notification = Notification.createPending(booking, notiType, MEMBER, member.getId(), TELEGRAM, message);
-        try {
-            // UNIQUE(book_id, type, target_id) 제약 위반 시 "이미 발송(예정)"으로 간주하고 무시
-            notificationRepository.saveAndFlush(notification);
-        } catch (DataIntegrityViolationException e) {
-            log.info("이미 생성된 알림 — 무시 | bookingId={}, notiType={}, memberId={}", booking.getId(), notiType, member.getId());
-            return;
-        }
-
-        notificationSender.send(notification);
-    }
-
-    // CALL은 book_id가 항상 null이라 UNIQUE(book_id, type, target_id) 멱등성 제약이 무력화됨(NULL은 서로 다른 값 취급).
-    // 문제 없음 — CALL은 폴링이 아니라 단발성 HTTP 호출이라 애초에 중복 발송 위험 자체가 없음(concepts.md 참고).
     private void createSingleCall(Member member, String message) {
         Notification notification = Notification.createPending(null, NotiType.CALL, MEMBER, member.getId(), TELEGRAM, message);
         notificationRepository.save(notification);
@@ -122,17 +101,6 @@ public class NotificationService {
             case TIME_CHANGED -> "[%s] 예약 시간이 %s ~ %s로 변경되었습니다.".formatted(roomName, booking.getStartTime(), booking.getEndTime());
             default -> throw new ReminderMessageException("notifyBooking은 예약 관련 NotiType만 지원합니다: " + notiType);
         };
-    }
-
-    // NotificationScheduler의 재시도 스윕이 호출. spring-retry의 @Retryable이 이미 실패한 뒤,
-    // 시간이 좀 지나서 다시 시도하는 더 느슨한 세이프티넷 (역할이 달라서 중복 아님).
-    @Transactional
-    public void retryFailed() {
-        List<Notification> notificationList = notificationRepository.findByStatusIn(List.of(NotificationStatus.FAILED));
-
-        notificationList.stream()
-                .filter(notification -> notification.getRetryCount() < MAX_RETRY_COUNT)
-                .forEach(notificationSender::send);
     }
 
     @Transactional(readOnly = true)
@@ -157,8 +125,6 @@ public class NotificationService {
         notification.markRead();
     }
 
-    // MemberNotificationController의 updateNotificationPreference가 호출.
-    // 컨트롤러에 @Transactional이 없어 엔티티 변경이 더티체킹으로 반영 안 되는 문제가 있어서 이쪽으로 옮김.
     @Transactional
     public void updateNotificationPreference(Member requester, Long targetMemberId, boolean enabled) {
         boolean isSelfOrTa = Objects.equals(requester.getId(), targetMemberId) || requester.getRole() == Role.TA;
@@ -171,8 +137,6 @@ public class NotificationService {
         target.updateNotificationPreference(enabled);
     }
 
-    // 세션에 캐시된 CustomUserDetails.member는 로그인 시점 스냅샷이라 연동 여부가 최신이 아닐 수 있음 —
-    // 그래서 매번 DB에서 다시 조회함(MemberNotificationController#getTelegramLinkStatus가 호출).
     @Transactional(readOnly = true)
     public boolean isChatLinked(Long memberId) {
         return memberRepository.findById(memberId)

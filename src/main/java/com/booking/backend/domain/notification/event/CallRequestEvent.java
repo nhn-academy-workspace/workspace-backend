@@ -6,6 +6,7 @@ import com.booking.backend.domain.notification.entity.TargetType;
 public record CallRequestEvent(
         TargetType targetType,
         Long targetId,
+        Long callerId,
         String message
 ) {
 }

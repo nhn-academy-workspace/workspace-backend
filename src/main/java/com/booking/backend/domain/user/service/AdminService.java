@@ -132,7 +132,21 @@ public class AdminService {
     }
 
     @Transactional
-    public void call(CallRequest req) {
-        eventPublisher.publishEvent(new CallRequestEvent(req.targetType(), req.targetId(), req.message()));
+    public void call(CallRequest req, Long memberId) {
+        Member ta = memberRepository.findById(memberId)
+                .orElseThrow(()-> new MemberNotFoundException("멤버를 찾을 수 없습니다. memberId: "+memberId));
+
+        // targetId는 targetType에 따라 memberId 또는 teamId라 표시용 이름도 그에 맞게 조회
+        String targetName = switch (req.targetType()) {
+            case MEMBER -> memberRepository.findById(req.targetId())
+                    .orElseThrow(() -> new MemberNotFoundException("memberId가 " + req.targetId() + "인 멤버가 존재하지 않습니다."))
+                    .getName();
+            case TEAM -> teamRepository.findById(req.targetId())
+                    .orElseThrow(() -> new TeamNotFoundException("teamId가 " + req.targetId() + "인 팀이 존재하지 않습니다."))
+                    .getName();
+        };
+
+        eventPublisher.publishEvent(new CallRequestEvent(req.targetType(), req.targetId(), ta.getId(),
+                String.format("[%s] %s 호출: %s", ta.getName(), targetName, req.message())));
     }
 }
