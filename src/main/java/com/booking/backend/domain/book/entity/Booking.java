@@ -11,6 +11,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Entity
 @Table(name = "bookings")
@@ -31,6 +32,9 @@ public class Booking {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
+
+    @OneToMany(mappedBy = "booking")
+    private List<BookingMember> bookingMembers;
 
     // 신청자 ID
     @ManyToOne(fetch = FetchType.LAZY)
@@ -88,5 +92,9 @@ public class Booking {
 
     public void cancelled() {
         this.bookStatus = BookStatus.CANCELLED;
+    }
+
+    public List<String> getMemberNames() {
+        return bookingMembers.stream().map(b -> b.getMember().getName()).toList();
     }
 }
