@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 env:
-  IMAGE_NAME: ghcr.io/academy-pj/workspace-backend
+  IMAGE_NAME: ghcr.io/nhn-academy-workspace/workspace-backend
 
 jobs:
   build-and-push:
@@ -36,9 +36,9 @@ jobs:
 
       - name: Update manifest repo
         run: |
-          git clone https://x-access-token:${{ secrets.MANIFEST_REPO_TOKEN }}@github.com/academy-pj/workspace-manifests.git
+          git clone https://x-access-token:${{ secrets.MANIFEST_REPO_TOKEN }}@github.com/nhn-academy-workspace/workspace-manifests.git
           cd workspace-manifests
-          sed -i "s|image: ghcr.io/academy-pj/workspace-backend:.*|image: ghcr.io/academy-pj/workspace-backend:${{ github.sha }}|" apps/backend-deployment.yaml
+          sed -i "s|image: ghcr.io/nhn-academy-workspace/workspace-backend:.*|image: ghcr.io/nhn-academy-workspace/workspace-backend:${{ github.sha }}|" apps/backend-deployment.yaml
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add apps/backend-deployment.yaml
