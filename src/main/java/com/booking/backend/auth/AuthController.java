@@ -66,6 +66,13 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<LoginResponse> me(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        Member member = userDetails.getMember();
+        String teamName = member.getTeam() == null ? null : member.getTeam().getName();
+        return ResponseEntity.ok(new LoginResponse(member.getName(), member.getRole(), teamName, member.isMustChangePassword()));
+    }
+
     @PatchMapping("/password")
     public ResponseEntity<PasswordResponse> changePassword(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                            @RequestBody PasswordRequest req) {
