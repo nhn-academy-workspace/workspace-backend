@@ -12,6 +12,8 @@ import java.util.Optional;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("SELECT b FROM Booking b " +
+            "JOIN FETCH b.bookingMembers bm " +
+            "JOIN FETCH bm.member " +
             "WHERE b.room.id = :roomId " +
             "AND b.startTime >= :startOfDay AND b.startTime < :endOfDay " +
             "AND b.bookStatus != 'CANCELLED'")
