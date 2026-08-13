@@ -20,7 +20,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -38,8 +40,10 @@ public class NotificationService {
     private final MemberRepository memberRepository;
     private final BookingMemberRepository bookingMemberRepository;
     private final NotificationSender notificationSender;
-
     private final ReminderSender reminderSender;
+
+    private static final DateTimeFormatter KOREAN_DATETIME =
+            DateTimeFormatter.ofPattern("MM/dd(E) HH:mm", Locale.KOREAN);
 
     // NotificationScheduler가 시작/종료 5분 전 대상 예약마다 호출.
     // 팀 담당 TA만 보냄
@@ -94,11 +98,14 @@ public class NotificationService {
 
     private String buildBookingMessage(Booking booking, NotiType notiType) {
         String roomName = booking.getRoom().getName();
+        String teamName = booking.getTeam().getName();
+        String start = booking.getStartTime().format(KOREAN_DATETIME);
+        String end = booking.getEndTime().format(KOREAN_DATETIME);
         return switch (notiType) {
-            case START_REMINDER -> "[%s] 예약이 5분 후(%s) 시작합니다.".formatted(roomName, booking.getStartTime());
-            case END_REMINDER -> "[%s] 예약이 5분 후(%s) 종료됩니다.".formatted(roomName, booking.getEndTime());
-            case CANCELLED -> "[%s] 예약이 취소되었습니다.".formatted(roomName);
-            case TIME_CHANGED -> "[%s] 예약 시간이 %s ~ %s로 변경되었습니다.".formatted(roomName, booking.getStartTime(), booking.getEndTime());
+            case START_REMINDER -> "[%s] %s팀 예약이 5분 후(%s) 시작합니다.".formatted(roomName, teamName, start);
+            case END_REMINDER -> "[%s] %s팀 예약이 5분 후(%s) 종료됩니다.".formatted(roomName, teamName, end);
+            case CANCELLED -> "[%s] %s팀 예약이 취소되었습니다.".formatted(roomName, teamName);
+            case TIME_CHANGED -> "[%s] %s팀 예약 시간이 %s ~ %s로 변경되었습니다.".formatted(roomName, teamName, start, end);
             default -> throw new ReminderMessageException("notifyBooking은 예약 관련 NotiType만 지원합니다: " + notiType);
         };
     }
