@@ -46,7 +46,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     // 특정 팀의 해당 날짜 예약을 전부 불러옴
     @Query("SELECT b FROM Booking b " +
-            "WHERE b.team.id = :teamId AND b.bookStatus = 'BOOKED' " +
+            "WHERE b.team.id = :teamId AND b.bookStatus IN ('BOOKED', 'EARLY_RETURNED') " +
             "AND b.startTime >= :startOfDay AND b.endTime < :endOfDay")
     List<Booking> findBookingsByTeamIdAndDate(@Param("teamId") Long teamId,
                                               @Param("startOfDay") LocalDateTime startOfDay,
