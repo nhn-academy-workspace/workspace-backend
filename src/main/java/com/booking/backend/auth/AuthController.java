@@ -79,6 +79,8 @@ public class AuthController {
 
         PasswordResponse res = authService.changePassword(userDetails.getMember().getId(), req);
 
+        userDetails.getMember().setMustChangePassword(res.mustChangePassword());
+
         return ResponseEntity.ok(res);
     }
 
