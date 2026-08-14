@@ -81,5 +81,11 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "WHERE b.bookStatus = 'BOOKED' " +
             "AND b.endTime >= :from AND b.endTime < :to")
     List<Booking> findBookingsEndingBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    @Query("SELECT b FROM Booking b " +
+            "JOIN FETCH b.team " +
+            "JOIN FETCH b.room " +
+            "WHERE b.id = :id")
+    Optional<Booking> findByIdWithTeamAndRoom(@Param("id") Long id);
 }
 

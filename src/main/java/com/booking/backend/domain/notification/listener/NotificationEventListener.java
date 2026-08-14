@@ -30,7 +30,7 @@ public class NotificationEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(NotificationRequestedEvent event) {
         log.info("알림 요청 이벤트 수신: {}", event);
-        Booking booking = bookingRepository.findById(event.bookingId()).orElseThrow(()->new BookingNotFoundException("존재하지 않는 예약 아이디: 알림 전송 실패"));
+        Booking booking = bookingRepository.findByIdWithTeamAndRoom(event.bookingId()).orElseThrow(()->new BookingNotFoundException("존재하지 않는 예약 아이디: 알림 전송 실패"));
         notificationService.notifyBooking(booking, event.notiType());
     }
 
