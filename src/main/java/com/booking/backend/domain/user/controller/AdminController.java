@@ -94,4 +94,15 @@ public class AdminController {
         lockService.remove(lockId);
         return ResponseEntity.status(204).build();
     }
+
+
+    // TA에 의한 비밀번호 초기화
+    @PostMapping("/members/{memberId}/password/reset")
+    public ResponseEntity<ResetPasswordResponse> resetPassword(@PathVariable Long memberId) {
+
+        ResetPasswordResponse res = adminService.resetPassword(memberId);
+
+        return ResponseEntity.ok(res);
+    }
+
 }

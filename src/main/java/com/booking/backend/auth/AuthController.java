@@ -1,9 +1,6 @@
 package com.booking.backend.auth;
 
-import com.booking.backend.auth.dto.LoginRequest;
-import com.booking.backend.auth.dto.LoginResponse;
-import com.booking.backend.auth.dto.PasswordRequest;
-import com.booking.backend.auth.dto.PasswordResponse;
+import com.booking.backend.auth.dto.*;
 import com.booking.backend.domain.user.entity.Member;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -82,6 +79,14 @@ public class AuthController {
         userDetails.getMember().setMustChangePassword(res.mustChangePassword());
 
         return ResponseEntity.ok(res);
+    }
+
+    @PostMapping("/password/reset")
+    public ResponseEntity<Void> resetPassword(@RequestBody ResetPasswordRequest req) {
+
+        authService.resetPassword(req.loginId());
+
+        return ResponseEntity.ok().build();
     }
 
 }
