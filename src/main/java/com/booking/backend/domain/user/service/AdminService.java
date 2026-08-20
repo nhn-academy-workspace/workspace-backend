@@ -8,6 +8,7 @@ import com.booking.backend.domain.notification.event.CallRequestEvent;
 import com.booking.backend.domain.notification.event.NotificationRequestedEvent;
 import com.booking.backend.domain.user.dto.CallRequest;
 import com.booking.backend.domain.user.dto.MemberResponse;
+import com.booking.backend.domain.user.dto.ResetPasswordResponse;
 import com.booking.backend.domain.user.dto.TeamResponse;
 import com.booking.backend.domain.user.entity.Member;
 import com.booking.backend.domain.user.entity.Role;
@@ -15,9 +16,11 @@ import com.booking.backend.domain.user.entity.Team;
 import com.booking.backend.domain.user.repository.MemberRepository;
 import com.booking.backend.domain.user.repository.TeamRepository;
 import com.booking.backend.exception.exception.*;
+import com.booking.backend.util.PasswordGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +41,7 @@ public class AdminService {
     private final TeamRepository teamRepository;
     private final BookingRepository bookingRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
     public List<TeamResponse> getAll() {
@@ -83,7 +87,7 @@ public class AdminService {
         );
 
         if(member.getRole() != Role.STUDENT) {
-            throw new InvalidBookingMemberException("수강생만 팀을 재배정할 수 있습니다.");
+            throw new InvalidMemberException("수강생만 팀을 재배정할 수 있습니다.");
         }
 
         Team team = teamRepository.findById(teamId).orElseThrow(
@@ -148,5 +152,26 @@ public class AdminService {
 
         eventPublisher.publishEvent(new CallRequestEvent(req.targetType(), req.targetId(), ta.getId(),
                 String.format("[%s] %s 호출: %s", ta.getName(), targetName, req.message())));
+    }
+
+    @Transactional
+    public ResetPasswordResponse resetPassword(Long memberId) {
+        Member member = memberRepository.findById(memberId).orElseThrow(
+                () -> new MemberNotFoundException("해당 멤버를 찾을 수 없습니다. : " + memberId)
+        );
+
+        String newPwd = PasswordGenerator.generate();
+        member.setPassword(passwordEncoder.encode(newPwd));
+        log.debug("비밀번호 변경 완료 : {}", memberId);
+
+        /** TODO TA에 의한 비밀번호 초기화 알림
+         * -> 이건 TA 텔레그램에 보내줘야 함
+         * 1. 사용자 ID
+         * 2. 초기화된 비밀번호
+         */
+
+        member.setMustChangePassword(true);
+
+        return new ResetPasswordResponse(newPwd);
     }
 }

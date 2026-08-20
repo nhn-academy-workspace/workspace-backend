@@ -75,7 +75,9 @@ public class GlobalExceptionHandler {
             InvalidCurrentPasswordException.class,
             InvalidNewPasswordException.class,
             InvalidLockTimeException.class,
-            AlreadySameTeamException.class
+            AlreadySameTeamException.class,
+            InvalidMemberException.class,
+            InvalidGameSessionException.class
     })
     public ResponseEntity<ErrorResponse> badRequestExceptionHandler(Exception e) {
 
@@ -102,6 +104,13 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(status).body(res);
+    }
+
+    @ExceptionHandler(TelegramNotLinkedException.class)
+    public ResponseEntity<ErrorResponse> handleTelegramLinkedException(Exception e) {
+        log.debug("⚠️ 422 Unprocessable Entity : {}", e.getMessage());
+        ErrorResponse res = new ErrorResponse(422, e.getMessage(), LocalDateTime.now());
+        return ResponseEntity.status(422).body(res);
     }
 
 }

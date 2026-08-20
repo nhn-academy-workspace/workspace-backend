@@ -38,7 +38,9 @@ public class SecurityConfig {
                                 "/h2-console/**",
                                 "/api/v1/rooms",
                                 "/api/v1/auth/login",
-                                "/api/v1/telegram/webhook").permitAll()
+                                "/api/v1/telegram/webhook",
+                                "/api/v1/auth/password/reset"
+                                ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(customUserDetailsService);
