@@ -76,7 +76,8 @@ public class GlobalExceptionHandler {
             InvalidNewPasswordException.class,
             InvalidLockTimeException.class,
             AlreadySameTeamException.class,
-            InvalidMemberException.class
+            InvalidMemberException.class,
+            InvalidGameSessionException.class
     })
     public ResponseEntity<ErrorResponse> badRequestExceptionHandler(Exception e) {
 
