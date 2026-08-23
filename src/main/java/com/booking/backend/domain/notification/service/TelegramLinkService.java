@@ -43,6 +43,13 @@ public class TelegramLinkService {
     }
 
     @Transactional
+    public void skipLink(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
+        member.skipTelegramLink();
+    }
+
+    @Transactional
     public void completeLink(String token, Long chatId) {
         Member member = memberRepository.findByTelegramLinkToken(token).orElse(null);
         if(member == null){

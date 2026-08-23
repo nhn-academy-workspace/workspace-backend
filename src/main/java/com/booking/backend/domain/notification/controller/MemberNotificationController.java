@@ -33,6 +33,13 @@ public class MemberNotificationController {
         return ResponseEntity.ok(new TelegramLinkResponse(deepLink));
     }
 
+    @PostMapping("/me/telegram-link/skip")
+    public ResponseEntity<Void> skipLink(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        telegramLinkService.skipLink(userDetails.getMember().getId());
+
+        return ResponseEntity.noContent().build();
+    }
+
     @PatchMapping("/{id}/notification-preference")
     public ResponseEntity<Void> updateNotificationPreference(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                @PathVariable Long id,

@@ -6,6 +6,8 @@ public record LoginResponse(
         String name,
         Role role,
         String teamName,
-        boolean mustChangePassword
+        boolean mustChangePassword,
+        boolean telegramLinked,
+        boolean telegramLinkSkipped
 ) {
 }
