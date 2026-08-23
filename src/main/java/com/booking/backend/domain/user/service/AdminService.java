@@ -6,6 +6,7 @@ import com.booking.backend.domain.book.repository.BookingRepository;
 import com.booking.backend.domain.notification.entity.NotiType;
 import com.booking.backend.domain.notification.event.CallRequestEvent;
 import com.booking.backend.domain.notification.event.NotificationRequestedEvent;
+import com.booking.backend.domain.notification.telegram.TelegramClient;
 import com.booking.backend.domain.user.dto.CallRequest;
 import com.booking.backend.domain.user.dto.MemberResponse;
 import com.booking.backend.domain.user.dto.ResetPasswordResponse;
@@ -20,9 +21,11 @@ import com.booking.backend.util.PasswordGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClientException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -42,6 +45,7 @@ public class AdminService {
     private final BookingRepository bookingRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final PasswordEncoder passwordEncoder;
+    private final TelegramClient telegramClient;
 
     @Transactional(readOnly = true)
     public List<TeamResponse> getAll() {
@@ -164,11 +168,15 @@ public class AdminService {
         member.setPassword(passwordEncoder.encode(newPwd));
         log.debug("비밀번호 변경 완료 : {}", memberId);
 
-        /** TODO TA에 의한 비밀번호 초기화 알림
-         * -> 이건 TA 텔레그램에 보내줘야 함
-         * 1. 사용자 ID
-         * 2. 초기화된 비밀번호
-         */
+        String message = String.format("[%s] 임시 비밀번호 발급: %s", member.getLoginId(), newPwd);
+
+        try {
+            telegramClient.sendMessage(member.getChatId(), message);
+        } catch (RestClientException e) {
+            log.warn("비밀번호 초기화 텔레그램 전송 실패: {}", member.getLoginId(), e);
+            throw new NotificationException("비밀번호 초기화 실패. 다시 시도해주세요.", HttpStatus.BAD_GATEWAY);
+        }
+
 
         member.setMustChangePassword(true);
 
