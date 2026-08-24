@@ -45,6 +45,10 @@ public class Member {
     @Column(name = "chat_id")
     private Long chatId; // 텔레그램 연동 전까지 null
 
+    @ColumnDefault("false")
+    @Column(name = "telegram_link_skipped", nullable = false)
+    private boolean telegramLinkSkipped; // "나중에 할게요"로 강제 연동 유도를 건너뛴 계정
+
     @Builder.Default
     @ColumnDefault("true")
     @Column(name = "notification_enabled", nullable = false)
@@ -57,6 +61,11 @@ public class Member {
     public void linkChat(Long chatId) {
         this.chatId = chatId;
         this.telegramLinkToken = null; // 1회용 토큰이므로 연동 완료 시 초기화
+        this.telegramLinkSkipped = false; // 실제로 연동됐으니 스킵 상태는 의미 없어짐
+    }
+
+    public void skipTelegramLink() {
+        this.telegramLinkSkipped = true;
     }
 
     public void updateNotificationPreference(boolean enabled) {

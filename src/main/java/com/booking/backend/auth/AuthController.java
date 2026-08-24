@@ -50,7 +50,7 @@ public class AuthController {
 
         String teamName = member.getTeam() == null ? null : member.getTeam().getName();
 
-        return ResponseEntity.ok(new LoginResponse(member.getName(), member.getRole(), teamName, member.isMustChangePassword())); // 임시로 해놓은거임
+        return ResponseEntity.ok(new LoginResponse(member.getName(), member.getRole(), teamName, member.isMustChangePassword(), member.hasChatLinked(), member.isTelegramLinkSkipped())); // 임시로 해놓은거임
     }
 
     @PostMapping("/logout")
@@ -67,7 +67,7 @@ public class AuthController {
     public ResponseEntity<LoginResponse> me(@AuthenticationPrincipal CustomUserDetails userDetails) {
         Member member = userDetails.getMember();
         String teamName = member.getTeam() == null ? null : member.getTeam().getName();
-        return ResponseEntity.ok(new LoginResponse(member.getName(), member.getRole(), teamName, member.isMustChangePassword()));
+        return ResponseEntity.ok(new LoginResponse(member.getName(), member.getRole(), teamName, member.isMustChangePassword(), member.hasChatLinked(), member.isTelegramLinkSkipped()));
     }
 
     @PatchMapping("/password")

@@ -2,18 +2,22 @@ package com.booking.backend.auth;
 
 import com.booking.backend.auth.dto.PasswordRequest;
 import com.booking.backend.auth.dto.PasswordResponse;
+import com.booking.backend.domain.notification.telegram.TelegramClient;
 import com.booking.backend.domain.user.entity.Member;
 import com.booking.backend.domain.user.repository.MemberRepository;
 import com.booking.backend.exception.exception.InvalidCurrentPasswordException;
 import com.booking.backend.exception.exception.InvalidNewPasswordException;
 import com.booking.backend.exception.exception.MemberNotFoundException;
+import com.booking.backend.exception.exception.NotificationException;
 import com.booking.backend.exception.exception.TelegramNotLinkedException;
 import com.booking.backend.util.PasswordGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClientException;
 
 import java.util.Objects;
 
@@ -24,6 +28,7 @@ public class AuthService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TelegramClient telegramClient;
 
     @Transactional
     public PasswordResponse changePassword(Long memberId, PasswordRequest req) {
@@ -57,30 +62,27 @@ public class AuthService {
     @Transactional
     public void resetPassword(String loginId) {
 
-
         Member member = memberRepository.findByLoginId(loginId).orElseThrow(
                 () -> new MemberNotFoundException("해당 멤버를 찾을 수 없습니다.")
         );
 
-        // 텔레그램 연동 여부 확인
-        if (member.getChatId() == null) {
+        if (!member.hasChatLinked()) {
             throw new TelegramNotLinkedException("텔레그램 연동 후 사용 가능합니다.");
         }
 
         String newPwd = PasswordGenerator.generate();
+        String message = String.format("[%s] 임시 비밀번호 발급: %s", loginId, newPwd);
+
+        try {
+            telegramClient.sendMessage(member.getChatId(), message);
+        } catch (RestClientException e) {
+            log.warn("비밀번호 초기화 텔레그램 전송 실패: {}", loginId, e);
+            throw new NotificationException("비밀번호 초기화 실패. 다시 시도해주세요.", HttpStatus.BAD_GATEWAY);
+        }
 
         member.setPassword(passwordEncoder.encode(newPwd));
-        log.debug("비밀번호 변경 완료 : {}", loginId);
-
-        /** TODO 초기화된 비밀번호 텔레그램으로 전송
-         * newPwd 보내면 됨
-         * 근데 만약 전송 실패시 예외 던져서 트랜잭션이 롤백되도록 해야함
-         * 안그러면 전송 실패했는데 비밀번호 바뀌어버려서 로그인 못함
-         */
-
-
         member.setMustChangePassword(true);
-        // --> 비밀번호 바로 바꾸라고 강제
+        log.debug("비밀번호 초기화 완료 : {}", loginId);
     }
 
 }
