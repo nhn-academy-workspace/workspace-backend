@@ -42,7 +42,7 @@ class GameBeatDriftTest {
     private final MemberRepository memberRepository = mock(MemberRepository.class);
     private final GameScoreCalculator calc = new GameScoreCalculator();
     private final GameSessionProperties props = new GameSessionProperties(
-            Duration.ofMinutes(10), Duration.ofSeconds(5), 2.5, 1.02, 0.70, 3);
+            Duration.ofMinutes(10), Duration.ofSeconds(5), 2.5, 1.02, 0.70, 3, Duration.ofSeconds(3));
 
     private final GameService service = new GameService(
             scoreRepository, sessionRepository, memberRepository, calc, props);

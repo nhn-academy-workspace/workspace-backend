@@ -16,3 +16,5 @@ game:
     score-lower-tolerance: 0.70
     # 사용자당 동시 활성 세션 수
     max-active-sessions: 3
+    # 세션 발급 왕복 지연 보정 — 클라이언트는 응답을 기다리지 않고 게임을 시작한다
+    start-grace: 3s
