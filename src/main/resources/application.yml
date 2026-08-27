@@ -3,3 +3,16 @@ spring:
     name: backend
   profiles:
     default: local
+game:
+  session:
+    # 세션 최대 수명 — 방치형 치팅의 획득 상한을 고정한다 (10분 ≈ 4,700점)
+    ttl: 10m
+    # 클라이언트 하트비트 주기
+    beat-interval: 5s
+    # 허용 gap 배수 (beat-interval * 이 값을 넘게 끊기면 무효화)
+    beat-gap-tolerance: 2.5
+    # 기대 점수 대비 상한/하한 배수
+    score-upper-tolerance: 1.02
+    score-lower-tolerance: 0.70
+    # 사용자당 동시 활성 세션 수
+    max-active-sessions: 3
