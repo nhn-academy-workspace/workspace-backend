@@ -36,7 +36,7 @@ class GameServiceTest {
     // mock이 아니라 실제 인스턴스 — 진짜 점수 곡선을 태워야 하니까
     private final GameScoreCalculator calculator = new GameScoreCalculator();
     private final GameSessionProperties props = new GameSessionProperties(
-            Duration.ofMinutes(10), Duration.ofSeconds(5), 2.5, 1.02, 0.70, 3);
+            Duration.ofMinutes(10), Duration.ofSeconds(5), 2.5, 1.02, 0.70, 3, Duration.ofSeconds(3));
 
     private final GameService gameService = new GameService(
             scoreRepository, sessionRepository, memberRepository, calculator, props);

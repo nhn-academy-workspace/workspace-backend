@@ -39,7 +39,7 @@ class GameCheatAttackTest {
     private final MemberRepository memberRepository = mock(MemberRepository.class);
     private final GameScoreCalculator calc = new GameScoreCalculator();
     private final GameSessionProperties props = new GameSessionProperties(
-            Duration.ofMinutes(10), Duration.ofSeconds(5), 2.5, 1.02, 0.70, 3);
+            Duration.ofMinutes(10), Duration.ofSeconds(5), 2.5, 1.02, 0.70, 3, Duration.ofSeconds(3));
 
     private final GameService service = new GameService(
             scoreRepository, sessionRepository, memberRepository, calc, props);
@@ -219,19 +219,40 @@ class GameCheatAttackTest {
     // ══ 공격 10. 허용 오차 최대치 악용 ════════════════════════════
 
     @Test
-    @DisplayName("[방어] 상한 허용 오차(1.02)를 노려도 최종 점수 연속성 검사에 걸린다")
+    @DisplayName("[허용] 부풀릴 수 있는 최대치가 6% 이내인지 못 박는다")
     void toleranceAbuse() {
-        GameSession s = session(120);
-        played(s, 120, 23);
-        give(s);
+        // 허용 오차(1.02)와 발급 지연 보정(startGrace)은 정상 플레이어가 반려되지 않도록
+        // 반드시 필요하다. 대신 그만큼 부풀릴 여지가 생기므로, 그 크기가 조용히 커지지
+        // 않도록 여기서 상한을 고정한다.
+        //
+        // 지연 보정을 빼면 왕복 지연 500ms만으로도 첫 하트비트가 반려된다(GameSessionLatencyTest).
+        // 정상 유저를 거르는 것보다 몇 % 인플레를 감수하는 편이 낫다는 판단.
+        double honest = calc.expectedScore(120);
 
-        long inflated = (long) (calc.expectedScore(120) * 1.02);
+        long maxClaimable = binarySearchMaxAccepted(120);
+        double inflation = (maxClaimable - honest) / honest;
 
-        // 밴드 상한은 통과하지만, 마지막 하트비트 이후 벌 수 있는 점수(maxGain)를 넘어서 걸린다.
-        // 상·하한과 별개로 "직전 보고와 이어지는가"를 보기 때문.
-        assertThatThrownBy(() -> service.submit(ATTACKER, new ScoreRequest(s.getId(), inflated)))
-                .isInstanceOf(InvalidGameSessionException.class)
-                .hasMessageContaining("일치하지 않습니다");
+        assertThat(inflation)
+                .as("부풀리기 가능 폭 (정직한 점수 %.0f → 최대 %d)", honest, maxClaimable)
+                .isLessThan(0.06);
+    }
+
+    /** 경과 시간 elapsed에서 서버가 받아주는 최대 점수를 찾는다. */
+    private long binarySearchMaxAccepted(double elapsed) {
+        long lo = 0;
+        long hi = 100_000;
+        while (lo < hi) {
+            long mid = (lo + hi + 1) / 2;
+            GameSession s = session((long) elapsed);
+            played(s, elapsed, (int) (elapsed / 5) - 1);
+            give(s);
+            if (catchThrowable(() -> service.submit(ATTACKER, new ScoreRequest(s.getId(), mid))) == null) {
+                lo = mid;
+            } else {
+                hi = mid - 1;
+            }
+        }
+        return lo;
     }
 
     // ── 헬퍼 ─────────────────────────────────────────────────────
