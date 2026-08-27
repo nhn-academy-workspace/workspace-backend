@@ -32,6 +32,17 @@ public class GameController {
         return ResponseEntity.status(201).body(res);
     }
 
+    // 플레이 중 진행 상황 보고 (하트비트)
+    @PostMapping("/sessions/{sessionId}/beat")
+    public ResponseEntity<Void> beat(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                     @PathVariable String sessionId,
+                                     @RequestBody BeatRequest req) {
+
+        gameService.beat(userDetails.getMember().getId(), sessionId, req.score());
+
+        return ResponseEntity.ok().build();
+    }
+
     // 게임 점수 제출
     @PostMapping("/scores")
     public ResponseEntity<Void> submitScore(@AuthenticationPrincipal CustomUserDetails userDetails,
