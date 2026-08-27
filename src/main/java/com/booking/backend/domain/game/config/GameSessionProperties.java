@@ -15,6 +15,9 @@ import java.time.Duration;
  * @param scoreLowerTolerance   기대 점수 대비 하한 배수(시간 부풀리기 차단). 저사양 기기
  *                              오탐을 피하려 느슨하게 잡는다.
  * @param maxActiveSessions     사용자당 동시 활성 세션 수. 초과 발급 시 오래된 것부터 무효화.
+ * @param startGrace            세션 발급 왕복 지연 보정. 클라이언트는 응답을 기다리지 않고
+ *                              게임을 시작하므로 startedAt이 실제 게임 시작보다 늦게 찍힌다.
+ *                              그만큼 클라이언트 점수가 앞서 보이므로 상한에 여유를 준다.
  */
 @ConfigurationProperties(prefix = "game.session")
 public record GameSessionProperties(
@@ -23,7 +26,8 @@ public record GameSessionProperties(
         double beatGapTolerance,
         double scoreUpperTolerance,
         double scoreLowerTolerance,
-        int maxActiveSessions
+        int maxActiveSessions,
+        Duration startGrace
 ) {
 
     public GameSessionProperties {
@@ -33,6 +37,12 @@ public record GameSessionProperties(
         if (scoreUpperTolerance <= 0) scoreUpperTolerance = 1.02;
         if (scoreLowerTolerance <= 0) scoreLowerTolerance = 0.70;
         if (maxActiveSessions <= 0) maxActiveSessions = 3;
+        if (startGrace == null) startGrace = Duration.ofSeconds(3);
+    }
+
+    /** 상한 계산에 더해줄 보정 초. */
+    public double startGraceSeconds() {
+        return startGrace.toMillis() / 1000.0;
     }
 
     /** 하트비트 사이 허용되는 최대 공백. */

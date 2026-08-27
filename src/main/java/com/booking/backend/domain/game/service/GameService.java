@@ -132,7 +132,7 @@ public class GameService {
         double sinceLastBeat = session.getLastBeatAt() != null
                 ? Duration.between(session.getLastBeatAt(), now).toMillis() / 1000.0
                 : elapsedSeconds;
-        double maxGain = scoreCalculator.expectedScore(elapsedSeconds)
+        double maxGain = scoreCalculator.expectedScore(elapsedSeconds + props.startGraceSeconds())
                 - scoreCalculator.expectedScore(Math.max(0, elapsedSeconds - sinceLastBeat));
         if (score < session.getLastScore() || score > session.getLastScore() + maxGain + 2) {
             invalidate(session, "최종 점수가 플레이 기록과 일치하지 않습니다.");
@@ -176,7 +176,13 @@ public class GameService {
 
         double elapsed = elapsedSeconds(session, now);
 
-        if (score > scoreCalculator.upperBound(elapsed, props.scoreUpperTolerance())) {
+        // 상한에는 발급 지연 보정을 더한다.
+        // 클라이언트는 POST /sessions 응답을 기다리지 않고 게임을 시작하므로, startedAt이
+        // 실제 게임 시작보다 왕복 지연만큼 늦게 찍힌다. 그 오차는 세션 내내 고정인데
+        // 상한 여유(expected × 0.02)는 초반에 1~2점뿐이라, 보정이 없으면 지연 500ms만으로도
+        // 첫 하트비트가 반려된다.
+        if (score > scoreCalculator.upperBound(
+                elapsed + props.startGraceSeconds(), props.scoreUpperTolerance())) {
             invalidate(session, "점수가 허용 범위를 초과했습니다.");
         }
         if (score < scoreCalculator.lowerBound(elapsed, props.scoreLowerTolerance())) {
