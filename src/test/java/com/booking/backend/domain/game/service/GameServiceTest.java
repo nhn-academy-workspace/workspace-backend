@@ -60,7 +60,7 @@ class GameServiceTest {
         // 480초 × 9 = 4320점을 노린 제출
         assertThatThrownBy(() -> gameService.submit(MEMBER_ID, new ScoreRequest(session.getId(), 4000L)))
                 .isInstanceOf(InvalidGameSessionException.class)
-                .hasMessageContaining("플레이 기록이 충분하지 않습니다");
+                .hasMessageContaining("플레이 기록이 없습니다");
 
         assertThat(session.getStatus()).isEqualTo(GameSessionStatus.INVALIDATED);
         verify(scoreRepository, never()).save(any(Score.class));
