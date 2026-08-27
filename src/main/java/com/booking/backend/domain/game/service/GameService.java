@@ -102,9 +102,23 @@ public class GameService {
 
         double elapsedSeconds = elapsedSeconds(session, now);
 
-        // 하트비트를 실제로 보내며 플레이했는가.
-        long expectedBeats = (long) (elapsedSeconds * 1000 / props.beatInterval().toMillis()) - 1;
-        if (session.getBeatCount() < expectedBeats) {
+        // 하트비트가 세션 전체를 덮었는가.
+        //
+        // 각 하트비트는 수신 시점에 직전과의 gap(≤ maxBeatGap)을 이미 검증했으므로
+        // 연속성 자체는 보장돼 있다. 여기서 볼 것은 "하트비트가 아예 없거나
+        // 터무니없이 적은" 경우뿐이다.
+        //
+        // 기대 개수를 beatInterval로 잡으면 안 된다. 클라이언트는 게임 시간 기준으로
+        // 보내는데(시뮬레이션이 진행된 만큼만 누적) 서버는 실제 시간으로 세기 때문에,
+        // 프레임 손실·네트워크 지연만큼 드리프트가 누적돼 정상 플레이어가 반려된다.
+        // gap 규칙과 같은 기준으로 계산해야 두 검증이 서로 모순되지 않는다.
+        double maxGapSeconds = props.maxBeatGap().toMillis() / 1000.0;
+
+        if (elapsedSeconds > maxGapSeconds && session.getLastBeatAt() == null) {
+            invalidate(session, "플레이 기록이 없습니다.");
+        }
+        long minBeats = (long) (elapsedSeconds / maxGapSeconds) - 1;
+        if (session.getBeatCount() < minBeats) {
             invalidate(session, "플레이 기록이 충분하지 않습니다.");
         }
 
