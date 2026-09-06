@@ -16,9 +16,12 @@ import java.util.List;
 
 /**
  두 가지 역할을 겸함: 시작/종료 5분 전 폴링 + 실패 재시도 스윕.
- 폴링 창(window)이 왜 [now+5분, now+6분)인가: fixedRate=60_000(1분 간격)이라, 이번 폴링이
- [now+5, now+6)을 보면 다음 폴링(1분 뒤)은 자연히 [now+6, now+7)을 보게 됨 — 두 창이
- 겹치지도, 비지도 않아서 "5분 전"인 예약이 정확히 한 번의 폴링에만 걸림.
+ 폴링 창(window)이 왜 [now+4분, now+5분)인가: fixedRate=60_000(1분 간격)이라, 이번 폴링이
+ [now+4, now+5)을 보면 다음 폴링(1분 뒤)은 자연히 [now+5, now+6)을 보게 됨 — 두 창이
+ 겹치지도, 비지도 않아서 대상 예약이 정확히 한 번의 폴링에만 걸림.
+ 창을 [now+5, now+6)이 아니라 [now+4, now+5)로 잡는 이유: 전자면 발송 시점의 리드타임이
+ 5~6분(평균 5.5분)이라 "5분 후 종료됩니다" 문구보다 실제로는 늘 일찍(최대 6분 전) 도착함.
+ [now+4, now+5)이면 리드타임이 4~5분으로 항상 5분 이내라 "5분 전 알림" 의도에 맞음.
  다만 스케줄러 지연/재시작 등으로 어떤 예약이 두 번 걸리는 경우가 생겨도, NotificationService
  안에서 UNIQUE(book_id, type, target_id) 제약이 중복 저장을 막아주므로(2차 방어선) 안전함.
  */
@@ -34,7 +37,7 @@ public class NotificationScheduler {
     @Scheduled(fixedRate = 60_000)
     public void pollStartReminders() {
         LocalDateTime now = LocalDateTime.now();
-        List<Booking> targets = bookingRepository.findBookingsStartingBetween(now.plusMinutes(5), now.plusMinutes(6));
+        List<Booking> targets = bookingRepository.findBookingsStartingBetween(now.plusMinutes(4), now.plusMinutes(5));
 
         for (Booking booking : targets) {
             createRemindersSafely(booking, NotiType.START_REMINDER);
@@ -44,7 +47,7 @@ public class NotificationScheduler {
     @Scheduled(fixedRate = 60_000)
     public void pollEndReminders() {
         LocalDateTime now = LocalDateTime.now();
-        List<Booking> targets = bookingRepository.findBookingsEndingBetween(now.plusMinutes(5), now.plusMinutes(6));
+        List<Booking> targets = bookingRepository.findBookingsEndingBetween(now.plusMinutes(4), now.plusMinutes(5));
 
         for (Booking booking : targets) {
             createRemindersSafely(booking, NotiType.END_REMINDER);
