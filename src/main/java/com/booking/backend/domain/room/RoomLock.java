@@ -42,4 +42,10 @@ public class RoomLock {
     @CreatedDate
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    public void update(LocalDateTime startTime, LocalDateTime endTime, String reason) {
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.reason = reason;
+    }
 }
