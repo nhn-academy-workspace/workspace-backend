@@ -89,6 +89,16 @@ public class AdminController {
         return ResponseEntity.status(201).body(res);
     }
 
+    @PatchMapping("/room-locks/{lockId}")
+    public ResponseEntity<LockResponse> updateLock(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                   @PathVariable Long lockId,
+                                                   @RequestBody LockRequest req) {
+
+        LockResponse res = lockService.update(lockId, req, userDetails.getMember().getId());
+
+        return ResponseEntity.ok(res);
+    }
+
     @DeleteMapping("/room-locks/{lockId}")
     public ResponseEntity<Void> removeLock(@PathVariable Long lockId) {
         lockService.remove(lockId);

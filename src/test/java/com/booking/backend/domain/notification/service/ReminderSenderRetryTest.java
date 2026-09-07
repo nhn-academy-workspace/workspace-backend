@@ -43,4 +43,22 @@ class ReminderSenderRetryTest {
         verify(notificationSender, times(1)).send(sent.capture());
         assertThat(sent.getValue()).isEqualTo(networkError);
     }
+
+    // 회귀 테스트: 재시도 소진으로 한 건이 예외를 던져도 같은 사이클의 나머지 건은 계속 처리돼야 함
+    // (retryFailed()가 단일 트랜잭션이라, 예외가 전파되면 이미 성공한 markSent()까지 롤백됐던 버그)
+    @Test
+    void 한_건의_최종실패가_같은_사이클의_다른_알림_발송을_막지_않는다() {
+        Notification willFail = Notification.builder()
+                .id(1L).status(NotificationStatus.FAILED).failureReason("일시적 네트워크 오류").retryCount(1).build();
+        Notification willSucceed = Notification.builder()
+                .id(2L).status(NotificationStatus.FAILED).failureReason("일시적 네트워크 오류").retryCount(1).build();
+        when(notificationRepository.findByStatusIn(List.of(NotificationStatus.FAILED)))
+                .thenReturn(List.of(willFail, willSucceed));
+        doThrow(new RuntimeException("재시도 소진")).when(notificationSender).send(willFail);
+
+        reminderSender.retryFailed(); // 예외 없이 정상 반환돼야 함 (전파되면 @Transactional 전체가 롤백됨)
+
+        verify(notificationSender, times(1)).send(willFail);
+        verify(notificationSender, times(1)).send(willSucceed);
+    }
 }

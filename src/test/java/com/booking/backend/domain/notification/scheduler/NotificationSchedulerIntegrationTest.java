@@ -67,7 +67,7 @@ class NotificationSchedulerIntegrationTest {
         doThrow(new ResourceAccessException("텔레그램 API 응답 없음"))
                 .when(telegramClient).sendMessage(eq(222L), anyString()); // 예약 B: 재시도 3번 다 실패
 
-        LocalDateTime start = LocalDateTime.now().plusMinutes(5).plusSeconds(30);
+        LocalDateTime start = LocalDateTime.now().plusMinutes(4).plusSeconds(30); // 폴링 창 [now+4, now+5) 안에 들도록
         Room room1 = roomRepository.findById(1L).orElseThrow();
         Room room2 = roomRepository.findById(2L).orElseThrow();
 

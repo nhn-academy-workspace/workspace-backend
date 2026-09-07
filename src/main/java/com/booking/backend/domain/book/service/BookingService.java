@@ -45,7 +45,7 @@ public class BookingService {
 
         /**
          * 예약 조건
-         * 1. 15분 단위여야 함
+         * 1. 최소 15분부터 예약이 가능하며, 5분 단위.
          * 2. 한 번에 최대 두시간이여야 함
          * 3. 팀당 하루 4시간이 최대
          * 4. ~~같은 팀은 연속 예약은 1시간 간격이 필요~~
@@ -79,9 +79,18 @@ public class BookingService {
             throw new InvalidBookingTimeException("잘못된 요청입니다. 오늘 날짜만 예약을 할 수 있습니다.");
         }
 
-        // 15분 단위가 아닌 경우
-        if(ChronoUnit.MINUTES.between(req.startTime().toLocalTime(), req.endTime().toLocalTime()) % 15 != 0) {
-            throw new InvalidBookingTimeException("예약은 15분 단위로 할 수 있습니다.");
+        // 오늘 날짜여도 이미 지난 시각으로는 예약할 수 없는 경우 (날짜만 같고 시간은 과거인 경우를 막음)
+        if(start.isBefore(now)) {
+            throw new InvalidBookingTimeException("지난 시간은 예약할 수 없습니다.");
+        }
+
+        // 최소 예약 시간이 15분 미만인 경우
+        if(ChronoUnit.MINUTES.between(req.startTime().toLocalTime(), req.endTime().toLocalTime()) < 15){
+            throw new InvalidBookingTimeException("예약은 최소 15분 이상부터 가능합니다.");
+        }
+        // 5분 단위가 아닌 경우 (15분 단위 예약이 취소돼도 5분 단위로 재예약 가능하게)
+        if(ChronoUnit.MINUTES.between(req.startTime().toLocalTime(), req.endTime().toLocalTime()) % 5 != 0) {
+            throw new InvalidBookingTimeException("예약은 5분 단위로 할 수 있습니다.");
         }
 
         if(!nowTime.isAfter(bookingStartTime)) { // 08시 30분 이전에 예약하는 경우
@@ -173,7 +182,7 @@ public class BookingService {
 
         /** 연장 정책의 가드
          * 1. 종료 15분 전부터 종료 전까지만 가능함
-         * 2. 연장 최소 단위는 15분
+         * 2. 연장 최소 단위는 5분
          * 3. 연장 분 합산이 4시간을 넘길 수는 없음
          * 4. 연장 시간과 다음 예약이 겹치면 연장 불가
          * 5. 본인 소속팀의 예약만 연장 가능
@@ -208,14 +217,12 @@ public class BookingService {
             throw new ExtendNotAllowedException("사용 종료 15분 전부터 연장할 수 있습니다.");
         }
 
-        // 2. 연장 최소 시간에 부합하는지 + 15분 단위인지?
-
-        if(extendDuration < 15 || extendDuration % 15 != 0) {
-            throw new InvalidBookingTimeException("연장은 최소 15분부터, 15분 단위로 가능합니다.");
+        // 2. 연장 최소 시간에 부합하는지 + 5분 단위인지?
+        if(extendDuration < 5 || extendDuration % 5 != 0) {
+            throw new InvalidBookingTimeException("연장은 최소 5분부터, 5분 단위로 가능합니다.");
         }
 
         // 3. 연장 시간 포함 총 시간이 4시간 이하인지
-
         List<Booking> todayBookingList = bookingRepository.findBookingsByTeamIdAndDate(member.getTeam().getId(), startOfDay, endOfDay);
         Long todayDuration = todayBookingList.stream()
                 .mapToLong(Booking::getBookingDuration)

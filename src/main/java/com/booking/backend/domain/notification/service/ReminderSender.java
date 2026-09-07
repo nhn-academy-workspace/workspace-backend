@@ -5,12 +5,14 @@ import com.booking.backend.domain.notification.entity.*;
 import com.booking.backend.domain.notification.repository.NotificationRepository;
 import com.booking.backend.domain.user.entity.Member;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ReminderSender {
@@ -45,6 +47,13 @@ public class ReminderSender {
                 .filter(notification -> notification.getRetryCount() < MAX_RETRY_COUNT)
                 // 연동 전에 미리 보내졌던 알림들이 연동 후에 한번에 오지 않도록 NOT_LINKED_REASON 메시지 제외
                 .filter(notification -> !TelegramNotificationSender.NOT_LINKED_REASON.equals(notification.getFailureReason()))
-                .forEach(notificationSender::send);
+                // 한 건의 최종 실패(재시도 소진 시 예외 전파)가 같은 트랜잭션의 다른 성공 건까지 롤백시키지 않도록 격리
+                .forEach(notification -> {
+                    try {
+                        notificationSender.send(notification);
+                    } catch (Exception e) {
+                        log.error("재시도 발송 실패 | notificationId={}", notification.getId(), e);
+                    }
+                });
     }
 }
